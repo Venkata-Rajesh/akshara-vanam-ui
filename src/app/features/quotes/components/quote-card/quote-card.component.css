@@ -1,0 +1,246 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.quote-card {
+  position: relative;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.32s var(--ease-motion),
+    border-color 0.28s var(--ease-motion),
+    box-shadow 0.32s var(--ease-motion),
+    background 0.28s ease,
+    filter 0.28s ease;
+  box-shadow: var(--shadow-sm);
+  min-height: 220px;
+  height: 100%;
+  transform-origin: center center;
+  will-change: transform, box-shadow, filter;
+}
+
+.quote-card:hover,
+.quote-card:focus-visible {
+  transform: translateY(-8px) scale(1.01);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  filter: saturate(1.05);
+  outline: none;
+}
+
+/* Luminous Glow Aura */
+.card-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.quote-card:hover .card-glow {
+  opacity: 1;
+}
+
+/* Watermark Quote Mark */
+.watermark-mark {
+  position: absolute;
+  right: 16px;
+  bottom: 8px;
+  font-family: 'Noto Serif Telugu', Georgia, serif;
+  font-size: 140px;
+  line-height: 0.8;
+  color: var(--watermark-color);
+  pointer-events: none;
+  user-select: none;
+  transition:
+    transform 0.5s var(--ease-smooth),
+    color 0.5s ease;
+}
+
+.quote-card:hover .watermark-mark {
+  transform: translateY(-8px) scale(1.05);
+  color: var(--watermark-hover);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.quote-mark {
+  font-family: 'Noto Serif Telugu', Georgia, serif;
+  font-size: 42px;
+  line-height: 1;
+  background: var(--gradient-accent-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+  height: 28px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-icon-btn,
+.copy-btn {
+  background: var(--bg-surface-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.2s var(--ease-smooth),
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.action-icon-btn:hover,
+.copy-btn:hover {
+  background: var(--tag-bg);
+  color: var(--primary-500);
+  border-color: var(--primary-400);
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.12);
+}
+
+.action-icon-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.copy-btn.copied {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+  animation: copyPop 0.35s var(--ease-spring);
+}
+
+@keyframes copyPop {
+  0% {
+    transform: scale(0.85);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.quote-content {
+  font-family: 'Noto Serif Telugu', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text-primary);
+  font-style: italic;
+  margin: 0 0 24px 0;
+  flex: 1;
+  letter-spacing: 0.1px;
+}
+
+.card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 18px;
+  position: relative;
+  z-index: 2;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.author-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+
+.author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.author-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.1px;
+}
+
+.quote-date {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  border: 1px solid var(--tag-border);
+  transition:
+    transform 0.22s var(--ease-smooth),
+    background 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.tag-badge:hover {
+  background: var(--gradient-primary);
+  color: #ffffff;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.18);
+}

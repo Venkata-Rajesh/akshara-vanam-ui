@@ -1,0 +1,11 @@
+0 verbose cli /usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.17.0
+2 info using node@v24.19.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/venkatarajeshbathina/new_editor/test-auth/.npmrc
+5 silly config load:file:/usr/local/etc/npmrc
+6 verbose title npm exec ng test --no-watch --browsers=ChromeHeadless
+7 verbose argv "exec" "--" "ng" "test" "--no-watch" "--browsers=ChromeHeadless"
+8 verbose logfile logs-max:10 dir:/Users/venkatarajeshbathina/new_editor/test-auth/.npm/_logs/2026-08-22T07_08_38_372Z-
+9 verbose logfile /Users/venkatarajeshbathina/new_editor/test-auth/.npm/_logs/2026-08-22T07_08_38_372Z-debug-0.log
+10 silly logfile done cleaning log files

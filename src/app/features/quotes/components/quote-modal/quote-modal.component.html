@@ -1,0 +1,139 @@
+@if (editorMode()) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)" role="dialog" aria-modal="true">
+    <form class="modal-card editor-card" (click)="$event.stopPropagation()" (ngSubmit)="onSave()">
+      <button type="button" class="close-btn" (click)="onClose()" aria-label="Close dialog">
+        &times;
+      </button>
+
+      <h2 class="modal-title">{{ quote() ? 'Edit poem' : 'Write a new poem' }}</h2>
+
+      <div class="editor-form">
+        <div class="form-group form-row split-row">
+          <div>
+            <label for="poem-title">Title</label>
+            <input
+              id="poem-title"
+              class="form-control"
+              name="title"
+              type="text"
+              [ngModel]="form().title"
+              (ngModelChange)="form.update((value) => ({ ...value, title: $event }))"
+              maxlength="120"
+              placeholder="Sunrise, Kadal, etc."
+            />
+          </div>
+
+          <div>
+            <label for="poem-language">Language</label>
+            <select
+              id="poem-language"
+              class="form-control"
+              name="language"
+              [ngModel]="form().language"
+              (ngModelChange)="form.update((value) => ({ ...value, language: $event }))"
+            >
+              @for (option of languageOptions; track option) {
+                <option [value]="option">{{ option === 'telugu' ? 'తెలుగు' : 'English' }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="field-header">
+            <label for="quote-content">Poem content</label>
+          </div>
+          <app-markdown-editor
+            name="content"
+            [content]="form().content"
+            (contentChange)="form.update((value) => ({ ...value, content: $event }))"
+            [language]="form().language === 'telugu' ? 'telugu' : 'english'"
+            (languageChange)="form.update((value) => ({ ...value, language: $event, transliterationMode: $event === 'telugu' ? 'roman' : 'native' }))"
+          ></app-markdown-editor>
+        </div>
+
+        <div class="form-group">
+          <label for="quote-author">Author</label>
+          <input
+            id="quote-author"
+            class="form-control"
+            name="author"
+            type="text"
+            [ngModel]="form().author"
+            (ngModelChange)="form.update((value) => ({ ...value, author: $event }))"
+            required
+            minlength="2"
+            maxlength="100"
+            [placeholder]="form().language === 'telugu' ? 'కవి పేరు' : 'Author name'"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="quote-tags">Tags</label>
+          <input
+            id="quote-tags"
+            class="form-control"
+            name="tags"
+            type="text"
+            [ngModel]="tagsValue()"
+            (ngModelChange)="tagsValue.set($event)"
+            placeholder="Wisdom, Life, Growth"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="action-btn secondary" (click)="onClose()">Cancel</button>
+        <button type="submit" class="action-btn primary">
+          {{ quote() ? 'Save changes' : 'Publish poem' }}
+        </button>
+      </div>
+    </form>
+  </div>
+} @else if (quote(); as q) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button class="close-btn" (click)="onClose()" aria-label="Close dialog">&times;</button>
+
+      <div class="modal-header">
+        <div class="modal-avatar">{{ q.author.charAt(0) }}</div>
+        <div>
+          <h2 class="modal-author">{{ q.title || q.author }}</h2>
+          @if (q.dateAdded) {
+            <span class="modal-date"
+              >{{ q.language === 'telugu' ? 'తెలుగు' : 'English' }} · Added on
+              {{ q.dateAdded }}</span
+            >
+          }
+        </div>
+      </div>
+
+      <blockquote class="modal-quote">“{{ q.content }}”</blockquote>
+
+      <div class="modal-tags">
+        @for (tag of q.tags; track tag) {
+          <span class="tag-chip">{{ tag }}</span>
+        }
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="action-btn copy" (click)="onCopy()">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy Quote
+        </button>
+        <button type="button" class="action-btn close" (click)="onClose()">Close</button>
+      </div>
+    </div>
+  </div>
+}
