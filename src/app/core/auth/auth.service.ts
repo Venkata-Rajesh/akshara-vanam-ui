@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, delay, map, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, map, Observable, tap, throwError } from 'rxjs';
 import {
   ApiResponse,
   AuthResponse,
@@ -13,9 +13,9 @@ import {
 import { ToastService } from '../services/toast.service';
 import { API_BASE_URL } from '../config/api.config';
 
-const TOKEN_KEY = 'test_auth_jwt_token';
-const USER_KEY = 'test_auth_current_user';
-const USERS_STORE_KEY = 'test_auth_registered_users';
+const TOKEN_KEY = 'auth_jwt_token_v2';
+const USER_KEY = 'auth_current_user_v2';
+const LEGACY_KEYS = ['test_auth_jwt_token', 'test_auth_current_user', 'test_auth_registered_users'];
 
 @Injectable({
   providedIn: 'root',
@@ -33,10 +33,6 @@ export class AuthService {
   readonly token = this._token.asReadonly();
   readonly isAuthenticated = computed(() => !!this._token() && !!this._currentUser());
 
-  constructor() {
-    this.seedDefaultTestUser();
-  }
-
   signup(credentials: SignupCredentials): Observable<AuthResponse> {
     const signupPayload = {
       username: credentials.username.trim(),
@@ -50,41 +46,14 @@ export class AuthService {
         map((res) => {
           const result = res.data;
           const user = { ...result.user, username: result.user.username || credentials.username };
-          const token = result.token || this.generateMockToken(user);
-          this.saveUserInLocalRegistry(signupPayload);
           return {
             user,
-            token,
+            token: result.token,
             message: res.message || result.message || 'Registration successful',
             status: 'success' as const,
           };
         }),
-        catchError((error: HttpErrorResponse) => {
-          if (error.status !== 0) return throwError(() => this.toApiError(error));
-          // Fallback for offline / standalone mode
-          const users = this.getLocalRegistry();
-          const existing = users.find((u) => u.email === signupPayload.email);
-          if (existing) {
-            return throwError(() => new Error('An account with this email already exists'));
-          }
-
-          const newUser: AuthUser = {
-            id: 'usr_' + Date.now(),
-            username: signupPayload.username,
-            email: signupPayload.email,
-          };
-          this.saveUserInLocalRegistry(signupPayload);
-          const token = this.generateMockToken(newUser);
-
-          const response: AuthResponse = {
-            user: newUser,
-            token,
-            message: 'Account created successfully!',
-            status: 'success',
-          };
-
-          return of(response).pipe(delay(300));
-        }),
+        catchError((error: HttpErrorResponse) => throwError(() => this.toApiError(error))),
       );
   }
 
@@ -100,48 +69,20 @@ export class AuthService {
         map((res) => {
           const result = res.data;
           const user: AuthUser = {
-            id: result.user?.id || 'usr_' + Date.now(),
-            username: result.user?.username || loginPayload.email.split('@')[0],
-            email: loginPayload.email,
+            id: result.user.id,
+            username: result.user.username,
+            email: result.user.email,
             role: result.user?.role,
             avatarUrl: result.user?.avatarUrl,
           };
-          const token = result.token || this.generateMockToken(user);
           return {
             user,
-            token,
+            token: result.token,
             message: res.message || result.message || 'Login successful',
             status: 'success' as const,
           };
         }),
-        catchError((error: HttpErrorResponse) => {
-          if (error.status !== 0) return throwError(() => this.toApiError(error));
-          // Fallback for offline / standalone demo mode
-          const users = this.getLocalRegistry();
-          const found = users.find(
-            (u) => u.email === loginPayload.email && u.password === loginPayload.password,
-          );
-
-          if (!found) {
-            return throwError(() => new Error('Invalid email or password'));
-          }
-
-          const user: AuthUser = {
-            id: found.id || 'usr_' + Date.now(),
-            username: found.username || found.email.split('@')[0],
-            email: found.email,
-          };
-          const token = this.generateMockToken(user);
-
-          const response: AuthResponse = {
-            user,
-            token,
-            message: 'Login successful!',
-            status: 'success',
-          };
-
-          return of(response).pipe(delay(300));
-        }),
+        catchError((error: HttpErrorResponse) => throwError(() => this.toApiError(error))),
         tap((authRes) => {
           this.setSession(authRes.user, authRes.token);
         }),
@@ -184,19 +125,29 @@ export class AuthService {
 
   requestPasswordReset(email: string): Observable<void> {
     return this.http
-      .post<ApiResponse<null>>(`${this.apiBaseUrl}/auth/forgot-password`, { email: email.trim().toLowerCase() })
+      .post<
+        ApiResponse<null>
+      >(`${this.apiBaseUrl}/auth/forgot-password`, { email: email.trim().toLowerCase() })
       .pipe(map(() => undefined));
   }
 
   resetPassword(token: string, password: string): Observable<void> {
     return this.http
-      .post<ApiResponse<null>>(`${this.apiBaseUrl}/auth/reset-password/${encodeURIComponent(token)}`, { password })
+      .post<
+        ApiResponse<null>
+      >(`${this.apiBaseUrl}/auth/reset-password/${encodeURIComponent(token)}`, { password })
       .pipe(map(() => undefined));
   }
 
   private getStoredToken(): string | null {
     try {
-      return localStorage.getItem(TOKEN_KEY);
+      this.clearLegacyStorage();
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token && this.isMockToken(token)) {
+        this.clearSession();
+        return null;
+      }
+      return token;
     } catch {
       return null;
     }
@@ -204,6 +155,13 @@ export class AuthService {
 
   private getStoredUser(): AuthUser | null {
     try {
+      this.clearLegacyStorage();
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token && this.isMockToken(token)) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        return null;
+      }
       const data = localStorage.getItem(USER_KEY);
       return data ? JSON.parse(data) : null;
     } catch {
@@ -211,56 +169,16 @@ export class AuthService {
     }
   }
 
-  private getLocalRegistry(): Array<SignupCredentials & { id?: string }> {
+  private isMockToken(token: string): boolean {
     try {
-      const data = localStorage.getItem(USERS_STORE_KEY);
-      return data ? JSON.parse(data) : [];
+      return atob(token.split('.')[2] || '').startsWith('dummy_signature_');
     } catch {
-      return [];
+      return false;
     }
   }
 
-  private saveUserInLocalRegistry(user: SignupCredentials): void {
-    try {
-      const users = this.getLocalRegistry();
-      const existingIdx = users.findIndex((u) => u.email === user.email);
-      if (existingIdx >= 0) {
-        users[existingIdx] = user;
-      } else {
-        users.push({ ...user, id: 'usr_' + Date.now() });
-      }
-      localStorage.setItem(USERS_STORE_KEY, JSON.stringify(users));
-    } catch (e) {
-      console.warn('Failed to save to local registry', e);
-    }
-  }
-
-  private seedDefaultTestUser(): void {
-    const users = this.getLocalRegistry();
-    if (!users.some((u) => u.email === 'test@gmail.com')) {
-      users.push({
-        id: 'usr_demo_test',
-        username: 'Test User',
-        email: 'test@gmail.com',
-        password: 'test123',
-      });
-      localStorage.setItem(USERS_STORE_KEY, JSON.stringify(users));
-    }
-  }
-
-  private generateMockToken(user: AuthUser): string {
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(
-      JSON.stringify({
-        sub: user.id,
-        email: user.email,
-        username: user.username,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 86400,
-      }),
-    );
-    const signature = btoa('dummy_signature_' + Math.random().toString(36).substring(2));
-    return `${header}.${payload}.${signature}`;
+  private clearLegacyStorage(): void {
+    for (const key of LEGACY_KEYS) localStorage.removeItem(key);
   }
 
   private toApiError(error: HttpErrorResponse): Error {

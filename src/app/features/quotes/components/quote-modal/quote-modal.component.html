@@ -117,6 +117,120 @@
         }
       </div>
 
+      <section class="comments-panel" aria-labelledby="comments-heading">
+        <div class="comments-heading">
+          <h3 id="comments-heading">Comments</h3>
+          <div class="comments-tools">
+            <span>{{ comments().length }}</span>
+            @if (currentUser()?.role === 'admin') {
+              <button
+                type="button"
+                class="hidden-comments-toggle"
+                [class.active]="showHiddenComments()"
+                [attr.aria-pressed]="showHiddenComments()"
+                (click)="toggleHiddenComments()"
+              >
+                {{ showHiddenComments() ? 'Showing hidden' : 'Hidden comments' }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (isAuthenticated()) {
+          <form class="comment-form" (ngSubmit)="submitComment()">
+            <div class="comment-language-selector" role="group" aria-label="Comment language">
+              <button
+                type="button"
+                [class.active]="commentLanguage() === 'english'"
+                [attr.aria-pressed]="commentLanguage() === 'english'"
+                (click)="commentLanguage.set('english')"
+              >
+                English
+              </button>
+              <button
+                type="button"
+                [class.active]="commentLanguage() === 'telugu'"
+                [attr.aria-pressed]="commentLanguage() === 'telugu'"
+                (click)="commentLanguage.set('telugu')"
+              >
+                తెలుగు
+              </button>
+            </div>
+            <textarea
+              name="comment"
+              [ngModel]="commentDraft()"
+              (ngModelChange)="commentDraft.set($event)"
+              [attr.lang]="commentLanguage() === 'telugu' ? 'te' : 'en'"
+              maxlength="1500"
+              [placeholder]="
+                commentLanguage() === 'telugu' ? 'మీ వ్యాఖ్యను రాయండి' : 'Add to the conversation'
+              "
+              required
+            ></textarea>
+            <button type="submit" [disabled]="isPostingComment() || !commentDraft().trim()">
+              {{
+                isPostingComment()
+                  ? 'Posting…'
+                  : commentLanguage() === 'telugu'
+                    ? 'వ్యాఖ్య'
+                    : 'Comment'
+              }}
+            </button>
+          </form>
+        } @else {
+          <p class="comment-signin">
+            <button type="button" (click)="signIn()">Sign in</button> to add a comment.
+          </p>
+        }
+
+        @if (isLoadingComments()) {
+          <p class="comments-empty">Loading comments…</p>
+        } @else if (comments().length === 0) {
+          <p class="comments-empty">No comments yet.</p>
+        } @else {
+          <div class="comment-list">
+            @for (comment of comments(); track comment._id) {
+              <article class="comment-item">
+                <div class="comment-byline">
+                  <strong>{{ commentAuthor(comment) }}</strong>
+                  <span class="comment-language-badge">{{
+                    comment.language === 'telugu' ? 'తెలుగు' : 'English'
+                  }}</span>
+                  <time>{{ comment.createdAt | date: 'mediumDate' }}</time>
+                </div>
+                @if (editingCommentId() === comment._id) {
+                  <textarea
+                    [ngModel]="commentEditDraft()"
+                    (ngModelChange)="commentEditDraft.set($event)"
+                    maxlength="1500"
+                    aria-label="Edit comment"
+                  ></textarea>
+                  <button type="button" (click)="saveComment(comment)">Save edit</button>
+                } @else {
+                  <p>{{ comment.body }}</p>
+                }
+                @if (canManageComment(comment)) {
+                  <div class="comment-actions">
+                    <button type="button" (click)="startEditComment(comment)">Edit</button>
+                    <button type="button" (click)="deleteComment(comment)">Delete</button>
+                    @if (currentUser()?.role === 'admin') {
+                      <button
+                        type="button"
+                        (click)="
+                          moderateComment(comment, showHiddenComments() ? 'visible' : 'hidden')
+                        "
+                      >
+                        {{ showHiddenComments() ? 'Restore' : 'Hide' }}
+                      </button>
+                    }
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        }
+      </section>
+
       <div class="modal-actions">
         <button type="button" class="action-btn copy" (click)="onCopy()">
           <svg
@@ -132,6 +246,9 @@
           </svg>
           Copy Quote
         </button>
+        <button type="button" class="action-btn copy" (click)="shareEmail()">Email</button>
+        <button type="button" class="action-btn copy" (click)="shareWhatsApp()">WhatsApp</button>
+        <button type="button" class="action-btn copy" (click)="shareNative()">Share</button>
         <button type="button" class="action-btn close" (click)="onClose()">Close</button>
       </div>
     </div>

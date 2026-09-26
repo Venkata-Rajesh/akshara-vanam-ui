@@ -44,6 +44,50 @@ describe('ApiService', () => {
     });
   });
 
+  it('sets an explicit quote reaction', () => {
+    service.setReaction('507f1f77bcf86cd799439011', 'dislike').subscribe((summary) => {
+      expect(summary.dislikesCount).toBe(1);
+      expect(summary.userReaction).toBe('dislike');
+    });
+
+    const req = httpTesting.expectOne(
+      'http://localhost:3000/api/v1/quotes/507f1f77bcf86cd799439011/reaction',
+    );
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ type: 'dislike' });
+    req.flush({ data: { likesCount: 0, dislikesCount: 1, userReaction: 'dislike' } });
+  });
+
+  it('loads visible comments for a quote', () => {
+    service.getComments('507f1f77bcf86cd799439011').subscribe((page) => {
+      expect(page.comments.length).toBe(1);
+      expect(page.comments[0].body).toBe('Thoughtful words');
+    });
+
+    const req = httpTesting.expectOne(
+      'http://localhost:3000/api/v1/quotes/507f1f77bcf86cd799439011/comments?page=1&limit=20',
+    );
+    req.flush({
+      data: [{ _id: 'comment-1', body: 'Thoughtful words' }],
+      meta: { total: 1, page: 1 },
+    });
+  });
+
+  it('sends the selected language when adding a comment', () => {
+    service
+      .addComment('507f1f77bcf86cd799439011', 'తెలుగు వ్యాఖ్య', 'telugu')
+      .subscribe((comment) => {
+        expect(comment.language).toBe('telugu');
+      });
+
+    const req = httpTesting.expectOne(
+      'http://localhost:3000/api/v1/quotes/507f1f77bcf86cd799439011/comments',
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ body: 'తెలుగు వ్యాఖ్య', language: 'telugu' });
+    req.flush({ data: { _id: 'comment-2', body: 'తెలుగు వ్యాఖ్య', language: 'telugu' } });
+  });
+
   it('should surface backend failures', (done) => {
     service.getQuotes().subscribe({
       next: () => done.fail('Expected the request to fail'),

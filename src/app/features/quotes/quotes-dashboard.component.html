@@ -56,28 +56,36 @@
         }
       </button>
 
-      <div class="user-pill">
-        <span class="user-avatar">{{
-          (currentUser()?.username || 'U').charAt(0).toUpperCase()
-        }}</span>
-        <span class="user-name">{{ currentUser()?.username || currentUser()?.email }}</span>
-      </div>
+      @if (isAdmin()) {
+        <button type="button" class="review-btn" (click)="toggleReviewQueue()">
+          Review queue <span>{{ pendingQuotes().length }}</span>
+        </button>
+      }
 
-      <button type="button" class="logout-btn" (click)="logout()" title="Sign Out">
-        <svg
-          width="17"
-          height="17"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-        <span>Sign Out</span>
-      </button>
+      @if (currentUser()) {
+        <div class="user-pill">
+          <span class="user-avatar">{{ currentUser()!.username.charAt(0).toUpperCase() }}</span>
+          <span class="user-name">{{ currentUser()!.username || currentUser()!.email }}</span>
+        </div>
+
+        <button type="button" class="logout-btn" (click)="logout()" title="Sign Out">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      } @else {
+        <button type="button" class="logout-btn" (click)="openSignIn()">Sign In</button>
+      }
     </div>
   </header>
 
@@ -102,7 +110,10 @@
       <figure class="hero-verse" aria-label="Featured Telugu poetry">
         <div class="verse-topline">
           <span class="verse-mark" aria-hidden="true">॥</span>
-          <span class="voice-index">{{ activeVoiceIndex() + 1 | number: '2.0' }} / {{ featuredVoices.length | number: '2.0' }}</span>
+          <span class="voice-index"
+            >{{ activeVoiceIndex() + 1 | number: '2.0' }} /
+            {{ featuredVoices.length | number: '2.0' }}</span
+          >
         </div>
         <blockquote>{{ activeVoice().quote }}</blockquote>
         <figcaption>
@@ -111,7 +122,14 @@
         </figcaption>
         <div class="verse-footer">
           <div class="verse-controls" aria-label="Featured quote controls">
-            <button type="button" class="verse-control" (click)="showPreviousVoice()" aria-label="Previous quote">←</button>
+            <button
+              type="button"
+              class="verse-control"
+              (click)="showPreviousVoice()"
+              aria-label="Previous quote"
+            >
+              ←
+            </button>
             @for (voice of featuredVoices; track voice.poet; let index = $index) {
               <button
                 type="button"
@@ -122,11 +140,68 @@
                 [attr.aria-pressed]="activeVoiceIndex() === index"
               ></button>
             }
-            <button type="button" class="verse-control" (click)="showNextVoice()" aria-label="Next quote">→</button>
+            <button
+              type="button"
+              class="verse-control"
+              (click)="showNextVoice()"
+              aria-label="Next quote"
+            >
+              →
+            </button>
           </div>
         </div>
       </figure>
     </section>
+
+    @if (isAdmin() && isReviewQueueOpen()) {
+      <section class="review-queue" aria-labelledby="review-title">
+        <div class="review-heading">
+          <div>
+            <p class="eyebrow">Moderation</p>
+            <h2 id="review-title">Pending submissions</h2>
+          </div>
+          <button
+            type="button"
+            class="review-close"
+            (click)="toggleReviewQueue()"
+            aria-label="Close review queue"
+          >
+            &times;
+          </button>
+        </div>
+        @if (pendingQuotes().length === 0) {
+          <p class="review-empty">No submissions are waiting for review.</p>
+        } @else {
+          <div class="review-list">
+            @for (submission of pendingQuotes(); track submission._id) {
+              <article class="review-submission">
+                <div>
+                  <h3>{{ submission.title || submission.author }}</h3>
+                  <p>{{ submission.content }}</p>
+                  <small>{{ submission.author }} · {{ submission.tags.join(', ') }}</small>
+                </div>
+                <div class="review-actions">
+                  <button
+                    type="button"
+                    class="review-approve"
+                    (click)="reviewSubmission(submission, 'published')"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    type="button"
+                    class="review-reject"
+                    (click)="reviewSubmission(submission, 'rejected')"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
 
     <section class="curation-strip" aria-label="Collection summary">
       <div class="stat-card">
@@ -316,10 +391,13 @@
           <app-quote-card
             [style.--item-index]="idx"
             [quote]="quote"
+            [isAuthenticated]="isAuthenticated()"
+            [showManagementActions]="canManageQuote(quote)"
             (selectQuote)="openQuoteModal($event)"
             (copyQuote)="copyQuote($event)"
             (editQuote)="openEditQuote($event)"
             (deleteQuote)="deleteQuote($event)"
+            (reactionChange)="setReaction(quote._id, $event)"
           />
         }
       </section>

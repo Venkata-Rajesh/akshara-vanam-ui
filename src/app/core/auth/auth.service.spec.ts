@@ -1,20 +1,25 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let httpTesting: HttpTestingController;
 
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [AuthService, provideHttpClient(), provideRouter([])],
+      providers: [AuthService, provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     service = TestBed.inject(AuthService);
+    httpTesting = TestBed.inject(HttpTestingController);
+    spyOn(TestBed.inject(Router), 'navigate').and.returnValue(Promise.resolve(true));
   });
 
   afterEach(() => {
+    httpTesting.verify();
     localStorage.clear();
   });
 
@@ -37,6 +42,20 @@ describe('AuthService', () => {
       },
       error: done.fail,
     });
+
+    httpTesting.expectOne('http://localhost:3000/api/v1/auth/login').flush({
+      data: {
+        user: {
+          id: '507f1f77bcf86cd799439011',
+          username: 'Test User',
+          email: 'test@gmail.com',
+          role: 'user',
+        },
+        token: 'signed.jwt.token',
+        message: 'Login successful',
+      },
+      message: 'Login successful',
+    });
   });
 
   it('should clear session on logout', (done) => {
@@ -50,5 +69,33 @@ describe('AuthService', () => {
       },
       error: done.fail,
     });
+
+    httpTesting.expectOne('http://localhost:3000/api/v1/auth/login').flush({
+      data: {
+        user: {
+          id: '507f1f77bcf86cd799439011',
+          username: 'Test User',
+          email: 'test@gmail.com',
+          role: 'user',
+        },
+        token: 'signed.jwt.token',
+        message: 'Login successful',
+      },
+      message: 'Login successful',
+    });
+  });
+
+  it('does not create a local session when the API is unavailable', (done) => {
+    service.login({ email: 'test@gmail.com', password: 'test123' }).subscribe({
+      next: () => done.fail('Expected the API error to be surfaced'),
+      error: () => {
+        expect(service.isAuthenticated()).toBeFalse();
+        done();
+      },
+    });
+
+    httpTesting
+      .expectOne('http://localhost:3000/api/v1/auth/login')
+      .error(new ProgressEvent('Network error'));
   });
 });

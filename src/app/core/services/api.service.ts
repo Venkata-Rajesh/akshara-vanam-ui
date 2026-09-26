@@ -3,7 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
 import { ApiResponse } from '../auth/auth.models';
-import { PoetryLanguage, Quote, TransliterationMode } from '../models/quote.model';
+import {
+  PoetryLanguage,
+  Quote,
+  QuoteComment,
+  QuoteReaction,
+  QuoteStatus,
+  TransliterationMode,
+} from '../models/quote.model';
 
 export interface QuoteQuery {
   q?: string;
@@ -30,9 +37,15 @@ export interface QuotePage {
   meta?: Record<string, unknown>;
 }
 
-export interface LikeResult {
-  liked: boolean;
-  likes: number;
+export interface ReactionSummary {
+  likesCount: number;
+  dislikesCount: number;
+  userReaction: QuoteReaction | null;
+}
+
+export interface CommentPage {
+  comments: QuoteComment[];
+  meta: Record<string, unknown>;
 }
 
 @Injectable({
@@ -75,6 +88,23 @@ export class ApiService {
       .pipe(map((res) => this.normalizeQuote(res.data)));
   }
 
+  getPendingQuotes(): Observable<Quote[]> {
+    return this.http
+      .get<ApiResponse<Quote[]>>(`${this.apiUrl}/review/pending`, {
+        params: { page: 1, limit: 100 },
+      })
+      .pipe(map((res) => res.data.map((quote) => this.normalizeQuote(quote))));
+  }
+
+  reviewQuote(
+    id: string,
+    status: Extract<QuoteStatus, 'published' | 'rejected'>,
+  ): Observable<Quote> {
+    return this.http
+      .patch<ApiResponse<Quote>>(`${this.apiUrl}/${encodeURIComponent(id)}/review`, { status })
+      .pipe(map((res) => this.normalizeQuote(res.data)));
+  }
+
   updateQuote(id: string, input: Partial<QuoteInput>): Observable<Quote> {
     return this.http
       .put<ApiResponse<Quote>>(`${this.apiUrl}/${encodeURIComponent(id)}`, input)
@@ -87,9 +117,64 @@ export class ApiService {
       .pipe(map(() => undefined));
   }
 
-  toggleLike(id: string): Observable<LikeResult> {
+  setReaction(id: string, type: QuoteReaction | null): Observable<ReactionSummary> {
     return this.http
-      .post<ApiResponse<LikeResult>>(`${this.apiUrl}/${encodeURIComponent(id)}/like`, {})
+      .put<
+        ApiResponse<ReactionSummary>
+      >(`${this.apiUrl}/${encodeURIComponent(id)}/reaction`, { type })
+      .pipe(map((res) => res.data));
+  }
+
+  getComments(
+    id: string,
+    page = 1,
+    status: 'visible' | 'hidden' = 'visible',
+  ): Observable<CommentPage> {
+    const commentsUrl = `${this.apiUrl}/${encodeURIComponent(id)}/comments${status === 'hidden' ? '/hidden' : ''}`;
+    return this.http
+      .get<ApiResponse<QuoteComment[]>>(commentsUrl, {
+        params: { page, limit: 20 },
+      })
+      .pipe(map((res) => ({ comments: res.data, meta: res.meta || {} })));
+  }
+
+  addComment(
+    id: string,
+    body: string,
+    language: PoetryLanguage = 'english',
+  ): Observable<QuoteComment> {
+    return this.http
+      .post<
+        ApiResponse<QuoteComment>
+      >(`${this.apiUrl}/${encodeURIComponent(id)}/comments`, { body, language })
+      .pipe(map((res) => res.data));
+  }
+
+  updateComment(quoteId: string, commentId: string, body: string): Observable<QuoteComment> {
+    return this.http
+      .patch<
+        ApiResponse<QuoteComment>
+      >(`${this.apiUrl}/${encodeURIComponent(quoteId)}/comments/${encodeURIComponent(commentId)}`, { body })
+      .pipe(map((res) => res.data));
+  }
+
+  deleteComment(quoteId: string, commentId: string): Observable<void> {
+    return this.http
+      .delete<
+        ApiResponse<null>
+      >(`${this.apiUrl}/${encodeURIComponent(quoteId)}/comments/${encodeURIComponent(commentId)}`)
+      .pipe(map(() => undefined));
+  }
+
+  moderateComment(
+    quoteId: string,
+    commentId: string,
+    status: 'visible' | 'hidden',
+  ): Observable<QuoteComment> {
+    return this.http
+      .patch<
+        ApiResponse<QuoteComment>
+      >(`${this.apiUrl}/${encodeURIComponent(quoteId)}/comments/${encodeURIComponent(commentId)}/moderation`, { status })
       .pipe(map((res) => res.data));
   }
 
@@ -109,8 +194,14 @@ export class ApiService {
       transliterationMode: item.transliterationMode === 'roman' ? 'roman' : 'native',
       dateAdded: item.dateAdded || item.dateModified || new Date().toISOString().split('T')[0],
       length: item.length || (item.content ? item.content.length : 0),
-      createdBy: item.createdBy?.toString(),
+      createdBy:
+        typeof item.createdBy === 'object'
+          ? item.createdBy?._id?.toString() || item.createdBy?.id?.toString()
+          : item.createdBy?.toString(),
       likesCount: item.likesCount ?? 0,
+      dislikesCount: item.dislikesCount ?? 0,
+      userReaction: item.userReaction ?? null,
+      status: item.status || 'published',
     };
   }
 }

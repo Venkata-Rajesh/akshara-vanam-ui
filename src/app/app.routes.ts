@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { guestGuard } from './core/auth/auth.guard';
 import { LoginSignupComponent } from './features/auth/login-signup.component';
 import { QuotesDashboardComponent } from './features/quotes/quotes-dashboard.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
@@ -29,7 +29,6 @@ export const routes: Routes = [
     path: 'quotes',
     component: QuotesDashboardComponent,
     title: 'InspireHub - Quotes & Inspiration',
-    canActivate: [authGuard],
   },
   {
     path: '',

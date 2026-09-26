@@ -6,13 +6,14 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiService, QuoteInput } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { PoetryLanguage, Quote } from '../../core/models/quote.model';
+import { PoetryLanguage, Quote, QuoteReaction, QuoteStatus } from '../../core/models/quote.model';
 import { QuoteCardComponent } from './components/quote-card/quote-card.component';
 import { QuoteModalComponent } from './components/quote-modal/quote-modal.component';
 
@@ -27,9 +28,13 @@ export class QuotesDashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly apiService = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   readonly themeService = inject(ThemeService);
 
   readonly currentUser = this.authService.currentUser;
+  readonly isAuthenticated = this.authService.isAuthenticated;
+  readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
   readonly isDark = this.themeService.isDark;
   readonly featuredVoices = [
     {
@@ -73,6 +78,8 @@ export class QuotesDashboardComponent implements OnInit {
 
   // Data signals
   readonly quotes = signal<Quote[]>([]);
+  readonly pendingQuotes = signal<Quote[]>([]);
+  readonly isReviewQueueOpen = signal(false);
   readonly isLoading = signal(true);
 
   // Derived state
@@ -120,6 +127,14 @@ export class QuotesDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadQuotes();
+    if (this.isAdmin()) this.loadPendingQuotes();
+    this.route.queryParamMap.subscribe((params) => {
+      const quoteId = params.get('quote');
+      if (!quoteId) return;
+      this.apiService.getQuote(quoteId).subscribe({
+        next: (quote) => this.selectedQuote.set(quote),
+      });
+    });
   }
 
   toggleTheme(): void {
@@ -198,12 +213,15 @@ export class QuotesDashboardComponent implements OnInit {
     request.subscribe({
       next: (saved) => {
         this.closeQuoteModal();
-        this.quotes.update((quotes) =>
-          quote
-            ? quotes.map((item) => (item._id === saved._id ? saved : item))
-            : [saved, ...quotes],
-        );
-        this.toast.success(quote ? 'Quote updated successfully.' : 'Quote added successfully.');
+        this.quotes.update((quotes) => {
+          const withoutSaved = quotes.filter((item) => item._id !== saved._id);
+          return saved.status === 'published' ? [saved, ...withoutSaved] : withoutSaved;
+        });
+        if (saved.status === 'pending') {
+          this.toast.success('Submission received. It will appear after admin review.');
+        } else {
+          this.toast.success(quote ? 'Quote updated successfully.' : 'Quote published.');
+        }
       },
       error: (error) => {
         this.isSaving.set(false);
@@ -220,6 +238,58 @@ export class QuotesDashboardComponent implements OnInit {
         this.toast.success('Quote deleted successfully.');
       },
       error: (error) => this.toast.error(error.message || 'Unable to delete quote.'),
+    });
+  }
+
+  canManageQuote(quote: Quote): boolean {
+    const user = this.currentUser();
+    return !!user && (user.role === 'admin' || user.id === quote.createdBy);
+  }
+
+  setReaction(quoteId: string, reaction: QuoteReaction | null): void {
+    if (!this.isAuthenticated()) {
+      this.openSignIn();
+      return;
+    }
+    this.apiService.setReaction(quoteId, reaction).subscribe({
+      next: (summary) => {
+        this.quotes.update((quotes) =>
+          quotes.map((quote) => (quote._id === quoteId ? { ...quote, ...summary } : quote)),
+        );
+        const selected = this.selectedQuote();
+        if (selected?._id === quoteId) this.selectedQuote.set({ ...selected, ...summary });
+      },
+      error: (error) => this.toast.error(error.message || 'Unable to update reaction.'),
+    });
+  }
+
+  toggleReviewQueue(): void {
+    this.isReviewQueueOpen.update((open) => !open);
+    if (this.pendingQuotes().length === 0) this.loadPendingQuotes();
+  }
+
+  reviewSubmission(quote: Quote, status: Extract<QuoteStatus, 'published' | 'rejected'>): void {
+    this.apiService.reviewQuote(quote._id, status).subscribe({
+      next: (reviewed) => {
+        this.pendingQuotes.update((items) => items.filter((item) => item._id !== reviewed._id));
+        if (status === 'published') this.quotes.update((items) => [reviewed, ...items]);
+        this.toast.success(
+          status === 'published' ? 'Quote approved and published.' : 'Submission rejected.',
+        );
+      },
+      error: (error) => this.toast.error(error.message || 'Unable to review submission.'),
+    });
+  }
+
+  openSignIn(): void {
+    void this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+  }
+
+  private loadPendingQuotes(): void {
+    if (!this.isAdmin()) return;
+    this.apiService.getPendingQuotes().subscribe({
+      next: (quotes) => this.pendingQuotes.set(quotes),
+      error: (error) => this.toast.error(error.message || 'Unable to load review queue.'),
     });
   }
 

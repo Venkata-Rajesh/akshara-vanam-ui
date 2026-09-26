@@ -155,6 +155,97 @@
   border-color: rgba(142, 49, 35, 0.3);
 }
 
+.review-btn,
+.review-close,
+.review-approve,
+.review-reject {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: var(--bg-surface-glass);
+  font: inherit;
+  cursor: pointer;
+}
+.review-btn,
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-btn {
+  min-height: 38px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.review-btn span {
+  color: var(--maroon-700);
+  font-weight: 800;
+}
+.review-queue {
+  margin: 18px 0 28px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+.review-heading,
+.review-submission {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.review-heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font:
+    700 22px 'Noto Serif Telugu',
+    serif;
+}
+.review-heading .eyebrow {
+  margin: 0;
+}
+.review-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.review-submission {
+  padding: 12px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.review-submission h3,
+.review-submission p {
+  margin: 0 0 5px;
+}
+.review-submission p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.review-submission small,
+.review-empty {
+  color: var(--text-muted);
+}
+.review-approve,
+.review-reject {
+  min-height: 36px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.review-approve {
+  border-color: transparent;
+  color: var(--text-on-brand);
+  background: var(--maroon-700);
+}
+.review-close:hover,
+.review-reject:hover {
+  border-color: var(--border-accent);
+  color: var(--maroon-700);
+  background: var(--gold-wash);
+}
+
 .literary-hero {
   position: relative;
   display: grid;
@@ -284,7 +375,9 @@
 .voice-index {
   padding-top: 7px;
   color: var(--gold-700);
-  font: 700 10px/1 'Plus Jakarta Sans', sans-serif;
+  font:
+    700 10px/1 'Plus Jakarta Sans',
+    sans-serif;
   letter-spacing: 0.16em;
 }
 .hero-verse blockquote {

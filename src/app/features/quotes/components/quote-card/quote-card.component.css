@@ -166,6 +166,37 @@
   letter-spacing: 0.1px;
 }
 
+.reaction-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.reaction-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 54px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: var(--bg-surface-glass);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.reaction-actions button:hover,
+.reaction-actions button.active {
+  border-color: var(--border-accent);
+  color: var(--maroon-700);
+  background: var(--gold-wash);
+}
+
 .card-footer {
   display: flex;
   flex-direction: column;

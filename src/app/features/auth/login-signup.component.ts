@@ -48,12 +48,6 @@ export class LoginSignupComponent {
     this.isRightPanelActive.set(false);
   }
 
-  fillDemoCredentials(): void {
-    this.loginData.email = 'test@gmail.com';
-    this.loginData.password = 'test123';
-    this.toast.info('Demo credentials filled!');
-  }
-
   onLogin(form: NgForm): void {
     if (form.invalid) {
       this.toast.warning('Please enter valid email and password.');
@@ -82,8 +76,8 @@ export class LoginSignupComponent {
       return;
     }
 
-    if (this.signupData.password.length < 6) {
-      this.toast.warning('Password must be at least 6 characters.');
+    if (this.signupData.password.length < 12) {
+      this.toast.warning('Password must be at least 12 characters.');
       return;
     }
 

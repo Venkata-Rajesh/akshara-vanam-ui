@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Quote } from '../../../../core/models/quote.model';
+import { Quote, QuoteReaction } from '../../../../core/models/quote.model';
 
 @Component({
   selector: 'app-quote-card',
@@ -15,6 +15,9 @@ export class QuoteCardComponent {
   readonly copyQuote = output<Quote>();
   readonly editQuote = output<Quote>();
   readonly deleteQuote = output<Quote>();
+  readonly reactionChange = output<QuoteReaction | null>();
+  readonly isAuthenticated = input(false);
+  readonly showManagementActions = input(false);
 
   readonly isCopied = signal(false);
 
@@ -41,5 +44,10 @@ export class QuoteCardComponent {
   onDeleteClick(event: MouseEvent): void {
     event.stopPropagation();
     this.deleteQuote.emit(this.quote());
+  }
+
+  onReactionClick(event: MouseEvent, reaction: QuoteReaction): void {
+    event.stopPropagation();
+    this.reactionChange.emit(this.quote().userReaction === reaction ? null : reaction);
   }
 }
