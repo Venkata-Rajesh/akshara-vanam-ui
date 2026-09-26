@@ -15,17 +15,10 @@ import { ThemeService } from '../../core/services/theme.service';
 import { PoetryLanguage, Quote } from '../../core/models/quote.model';
 import { QuoteCardComponent } from './components/quote-card/quote-card.component';
 import { QuoteModalComponent } from './components/quote-modal/quote-modal.component';
-import { PlayfulWidgetComponent } from './components/playful-widget/playful-widget.component';
 
 @Component({
   selector: 'app-quotes-dashboard',
-  imports: [
-    CommonModule,
-    FormsModule,
-    QuoteCardComponent,
-    QuoteModalComponent,
-    PlayfulWidgetComponent,
-  ],
+  imports: [CommonModule, FormsModule, QuoteCardComponent, QuoteModalComponent],
   templateUrl: './quotes-dashboard.component.html',
   styleUrl: './quotes-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,9 +31,37 @@ export class QuotesDashboardComponent implements OnInit {
 
   readonly currentUser = this.authService.currentUser;
   readonly isDark = this.themeService.isDark;
+  readonly featuredVoices = [
+    {
+      quote: 'దేశమంటే మట్టి కాదోయ్,\nదేశమంటే మనుషులోయ్.',
+      poet: 'గురజాడ అప్పారావు',
+      note: 'మానవతా దృష్టి',
+    },
+    {
+      quote: 'ఏ దేశమేగినా ఎందుకాలిడినా,\nఏ పీఠమెక్కినా ఎవ్వరేమనినా.',
+      poet: 'రాయప్రోలు సుబ్బారావు',
+      note: 'దేశభక్తి గీతం',
+    },
+    {
+      quote: 'విశ్వదాభిరామ వినుర వేమ.',
+      poet: 'వేమన',
+      note: 'నీతి పద్యం',
+    },
+    {
+      quote: 'పలికెడిది భాగవతమట,\nపలికించెడు వాడు రామభద్రుండట.',
+      poet: 'బమ్మెర పోతన',
+      note: 'భక్తి సాహిత్యం',
+    },
+    {
+      quote: 'మరో ప్రపంచం పిలిచింది,\nపదండి ముందుకు.',
+      poet: 'శ్రీశ్రీ',
+      note: 'ప్రగతి కవిత్వం',
+    },
+  ] as const;
+  readonly activeVoiceIndex = signal(0);
+  readonly activeVoice = computed(() => this.featuredVoices[this.activeVoiceIndex()]);
 
   // View state signals
-  readonly activeTab = signal<'gallery' | 'playground'>('gallery');
   readonly layoutMode = signal<'grid' | 'list'>('grid');
   readonly searchQuery = signal('');
   readonly selectedTag = signal<string | null>(null);
@@ -105,6 +126,20 @@ export class QuotesDashboardComponent implements OnInit {
     this.themeService.toggleTheme();
   }
 
+  showPreviousVoice(): void {
+    this.activeVoiceIndex.update((index) =>
+      index === 0 ? this.featuredVoices.length - 1 : index - 1,
+    );
+  }
+
+  showNextVoice(): void {
+    this.activeVoiceIndex.update((index) => (index + 1) % this.featuredVoices.length);
+  }
+
+  selectVoice(index: number): void {
+    this.activeVoiceIndex.set(index);
+  }
+
   loadQuotes(): void {
     this.isLoading.set(true);
     this.apiService.getQuotes().subscribe({
@@ -117,10 +152,6 @@ export class QuotesDashboardComponent implements OnInit {
         this.toast.error('Failed to load quotes. Please try again.');
       },
     });
-  }
-
-  setTab(tab: 'gallery' | 'playground'): void {
-    this.activeTab.set(tab);
   }
 
   setLayout(layout: 'grid' | 'list'): void {

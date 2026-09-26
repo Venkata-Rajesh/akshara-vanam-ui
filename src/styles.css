@@ -16,7 +16,9 @@
   --bg-input: #f7eedf;
   --bg-input-focus: #fffdf8;
   --bg-tab-pill: #eee2cc;
-  --bg-modal: rgba(255, 255, 255, 0.96);
+  --bg-editor-toolbar: rgba(255, 251, 242, 0.86);
+  --bg-suggestion-active: #f1dfbb;
+  --bg-modal: rgba(255, 252, 244, 0.98);
   --bg-modal-backdrop: rgba(15, 23, 42, 0.45);
 
   /* Ambient Mesh Gradients */
@@ -66,15 +68,24 @@
   /* Elevation Shadows */
   --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
   --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.12), 0 0 25px rgba(99, 102, 241, 0.08);
-  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.15);
+  --shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.12), 0 0 25px rgba(142, 49, 35, 0.08);
+  --shadow-glow: 0 0 25px rgba(182, 122, 37, 0.15);
 
   /* Watermark & Badges */
   --watermark-color: rgba(15, 23, 42, 0.03);
-  --watermark-hover: rgba(99, 102, 241, 0.08);
-  --tag-bg: rgba(99, 102, 241, 0.08);
-  --tag-color: #4f46e5;
-  --tag-border: rgba(99, 102, 241, 0.2);
+  --watermark-hover: rgba(182, 122, 37, 0.12);
+  --tag-bg: rgba(182, 122, 37, 0.1);
+  --tag-color: #7f4d10;
+  --tag-border: rgba(182, 122, 37, 0.28);
+  --text-on-brand: #fffaf0;
+  --text-on-active: #4d291d;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --duration-fast: 160ms;
+  --duration-standard: 240ms;
 
   /* Easing Curves */
   --ease-motion: cubic-bezier(0.22, 1, 0.36, 1);
@@ -86,6 +97,8 @@
   /* Interaction Tokens */
   --focus-ring: rgba(182, 122, 37, 0.2);
   --focus-ring-strong: rgba(142, 49, 35, 0.34);
+  --danger: #a33b31;
+  --success: #3d7658;
 }
 
 /* ==========================================================================
@@ -103,7 +116,9 @@
   --bg-input: rgba(71, 48, 32, 0.75);
   --bg-input-focus: rgba(78, 54, 35, 0.96);
   --bg-tab-pill: rgba(22, 15, 12, 0.74);
-  --bg-modal: rgba(22, 30, 53, 0.92);
+  --bg-editor-toolbar: rgba(83, 58, 42, 0.9);
+  --bg-suggestion-active: #6f452f;
+  --bg-modal: rgba(43, 30, 23, 0.98);
   --bg-modal-backdrop: rgba(7, 9, 19, 0.82);
 
   /* Ambient Mesh Gradients */
@@ -142,22 +157,28 @@
 
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #8f392b 0%, #c45a42 54%, #d3a456 100%);
-  --gradient-card: linear-gradient(145deg, rgba(61, 42, 31, .9) 0%, rgba(35, 24, 19, .94) 100%);
+  --gradient-card: linear-gradient(145deg, rgba(61, 42, 31, 0.9) 0%, rgba(35, 24, 19, 0.94) 100%);
   --gradient-text: linear-gradient(135deg, #fff8e9 40%, #e6bd72 75%, #dc7b5c 100%);
   --gradient-accent-text: linear-gradient(135deg, #e6bd72 0%, #dc7b5c 100%);
 
   /* Elevation Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.18);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(208, 91, 62, 0.18);
+  --shadow-glow: 0 0 30px rgba(225, 183, 104, 0.2);
 
   /* Watermark & Badges */
   --watermark-color: rgba(255, 255, 255, 0.02);
-  --watermark-hover: rgba(99, 102, 241, 0.06);
-  --tag-bg: rgba(99, 102, 241, 0.12);
-  --tag-color: #a5b4fc;
-  --tag-border: rgba(99, 102, 241, 0.25);
+  --watermark-hover: rgba(225, 183, 104, 0.1);
+  --tag-bg: rgba(225, 183, 104, 0.12);
+  --tag-color: #f0c978;
+  --tag-border: rgba(225, 183, 104, 0.3);
+  --text-on-brand: #fff8e9;
+  --text-on-active: #fff4de;
+  --focus-ring: rgba(225, 183, 104, 0.2);
+  --focus-ring-strong: rgba(193, 80, 52, 0.35);
+  --danger: #d06a5b;
+  --success: #5d9c75;
 }
 
 *,
@@ -186,6 +207,17 @@ select {
     color 0.25s var(--ease-motion),
     transform 0.25s var(--ease-motion),
     opacity 0.25s var(--ease-motion);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 button:focus-visible,
@@ -313,9 +345,8 @@ body::before {
 
 /* Selection Highlights */
 ::selection {
-  background: rgba(99, 102, 241, 0.3);
-  color: #ffffff;
-  text-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+  background: var(--gold-600);
+  color: #fffaf0;
 }
 
 @keyframes revealUp {
