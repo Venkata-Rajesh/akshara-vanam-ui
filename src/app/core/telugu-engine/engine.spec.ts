@@ -27,6 +27,14 @@ describe('Telugu language engine', () => {
   it('covers high-frequency casual Roman Telugu vocabulary', () => {
     expect(engine.transliterateWord('chaala').best?.text).toBe('చాలా');
     expect(engine.transliterateWord('baagundi').best?.text).toBe('బాగుంది');
+    expect(engine.transliterateWord('baagunnaru').best?.text).toBe('బాగున్నారు');
+    expect(engine.transliterateWord('baagunnara').best?.text).toBe('బాగున్నారా');
+    expect(engine.transliterateWord('emiti').best?.text).toBe('ఏమిటి');
+    expect(engine.transliterateWord('enti').best?.text).toBe('ఏంటి');
+    expect(engine.transliterateWord('thammudu').best?.text).toBe('తమ్ముడు');
+    expect(engine.transliterateWord('annam').best?.text).toBe('అన్నం');
+    expect(engine.transliterateWord('vellali').best?.text).toBe('వెళ్ళాలి');
+    expect(engine.transliterateWord('vijayawada').best?.text).toBe('విజయవాడ');
     expect(engine.transliterateWord('andamaina').best?.text).toBe('అందమైన');
     expect(engine.transliterateWord('vennela').best?.text).toBe('వెన్నెల');
     expect(engine.transliterateWord('hyderabad').best?.text).toBe('హైదరాబాద్');

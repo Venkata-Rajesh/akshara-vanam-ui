@@ -14,6 +14,7 @@ export class ForgotPasswordComponent {
   private readonly auth = inject(AuthService);
   readonly email = signal('');
   readonly submitted = signal(false);
+  readonly resetUrl = signal<string | null>(null);
   readonly isLoading = signal(false);
   readonly error = signal('');
 
@@ -21,8 +22,9 @@ export class ForgotPasswordComponent {
     this.error.set('');
     this.isLoading.set(true);
     this.auth.requestPasswordReset(this.email()).subscribe({
-      next: () => {
+      next: (resetUrl) => {
         this.isLoading.set(false);
+        this.resetUrl.set(resetUrl);
         this.submitted.set(true);
       },
       error: (error: Error) => {

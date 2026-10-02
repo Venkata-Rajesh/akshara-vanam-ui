@@ -253,6 +253,25 @@ input:focus + .input-icon,
   animation: shake 0.4s var(--ease-smooth);
 }
 
+.forgot-password-link {
+  align-self: flex-end;
+  margin: -8px 0 10px;
+  color: var(--maroon-600);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.forgot-password-link:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid var(--primary-500);
+  outline-offset: 3px;
+}
+
 @keyframes shake {
   0%,
   100% {

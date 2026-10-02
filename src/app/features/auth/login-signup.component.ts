@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { LoginCredentials, SignupCredentials } from '../../core/auth/auth.models';
+import { PasswordVisibilityToggleComponent } from '../../shared/components/password-visibility-toggle.component';
 
 @Component({
   selector: 'app-login-signup',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, PasswordVisibilityToggleComponent],
   templateUrl: './login-signup.component.html',
   styleUrl: './login-signup.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +25,10 @@ export class LoginSignupComponent {
   readonly isDark = this.themeService.isDark;
   readonly isRightPanelActive = signal(false);
   readonly isLoading = signal(false);
+  readonly loginPasswordVisible = signal(false);
+  readonly signupPasswordVisible = signal(false);
+  readonly signupConfirmationVisible = signal(false);
+  readonly signupPasswordConfirmation = signal('');
 
   loginData: LoginCredentials = {
     email: '',
@@ -78,6 +83,11 @@ export class LoginSignupComponent {
 
     if (this.signupData.password.length < 12) {
       this.toast.warning('Password must be at least 12 characters.');
+      return;
+    }
+
+    if (this.signupData.password !== this.signupPasswordConfirmation()) {
+      this.toast.warning('Passwords do not match.');
       return;
     }
 

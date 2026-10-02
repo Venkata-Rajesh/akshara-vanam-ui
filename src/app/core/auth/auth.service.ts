@@ -123,12 +123,12 @@ export class AuthService {
     );
   }
 
-  requestPasswordReset(email: string): Observable<void> {
+  requestPasswordReset(email: string): Observable<string | null> {
     return this.http
       .post<
-        ApiResponse<null>
+        ApiResponse<{ resetUrl?: string }>
       >(`${this.apiBaseUrl}/auth/forgot-password`, { email: email.trim().toLowerCase() })
-      .pipe(map(() => undefined));
+      .pipe(map((res) => res.data?.resetUrl ?? null));
   }
 
   resetPassword(token: string, password: string): Observable<void> {
