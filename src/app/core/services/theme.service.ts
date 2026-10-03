@@ -1,8 +1,6 @@
-import { effect, Injectable, signal } from '@angular/core';
+import { effect, signal, Service } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ThemeService {
   private readonly storageKey = 'theme-preference';
 

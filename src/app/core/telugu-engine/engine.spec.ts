@@ -46,7 +46,35 @@ describe('Telugu language engine', () => {
     expect(engine.transliterateWord('srinivas').best?.text).toBe('శ్రీనివాస్');
     expect(engine.transliterateWord('mobile').best?.text).toBe('మొబైల్');
     expect(engine.transliterateWord('andaru').best?.text).toBe('అందరూ');
-    expect(engine.transliterateWord('andariki').best?.text).toBe('అందరికీ');
+    expect(engine.transliterateWord('andariki').best?.text).toBe('అందరికి');
+  });
+  it('ranks natural spellings for long inflected words and keeps alternatives', () => {
+    const result = engine.transliterateWord('saamrajyaanni');
+    expect(result.best?.text).toBe('సామ్రాజ్యాన్ని');
+    expect(result.best?.source).toBe('generated');
+    expect(result.candidates.length).toBeGreaterThan(1);
+    expect(engine.transliterateWord('saamraajyaanni').best?.text).toBe('సామ్రాజ్యాన్ని');
+    expect(engine.transliterateWord('saamrajyanni').best?.text).toBe('సామ్రాజ్యాన్ని');
+    expect(engine.transliterateWord('saamrajyam').best?.text).toBe('సామ్రాజ్యం');
+    expect(engine.transliterateWord('pustakaanni').best?.text).toBe('పుస్తకాన్ని');
+    expect(engine.transliterateWord('jeevithaanni').best?.text).toBe('జీవితాన్ని');
+  });
+  it('generates emphatic forms from known pronoun and postposition stems', () => {
+    expect(engine.transliterateWord('ninne').best?.text).toBe('నిన్నే');
+    expect(engine.transliterateWord('nuvve').best?.text).toBe('నువ్వే');
+    expect(engine.transliterateWord('naake').best?.text).toBe('నాకే');
+    expect(engine.transliterateWord('vaadike').best?.text).toBe('వాడికే');
+  });
+  it('recognizes conditional suffix spelling variants and removes invalid guesses', () => {
+    expect(engine.transliterateWord('baruvu').best?.text).toBe('బరువు');
+    expect(engine.transliterateWord('Ru').best?.text).toBe('ఋ');
+    expect(engine.transliterateWord('R^i').best?.text).toBe('ఋ');
+    for (const input of ['baruvaite', 'baruvaithe', 'baruvayite', 'baruvayithe']) {
+      const result = engine.transliterateWord(input);
+      expect(result.best?.text, input).toBe('బరువైతే');
+      expect(result.candidates.map((candidate) => candidate.text), input).toEqual(['బరువైతే']);
+    }
+    expect(engine.transliterateWord('manchidaite').best?.text).toBe('మంచిదైతే');
   });
   it('recognizes common informal long-vowel spellings', () => {
     expect(engine.transliterateWord('ela').best?.text).toBe('ఎలా');

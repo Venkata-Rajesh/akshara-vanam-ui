@@ -7,6 +7,7 @@ import {
 import { fuzzyDictionaryMatches } from './dictionary/fuzzy';
 import { MemoryTeluguDictionary, TeluguDictionary } from './dictionary/dictionary';
 import { RomanTeluguMorphology } from './morphology/roman-morphology';
+import { TeluguMorphology } from './morphology/telugu-morphology';
 import { RomanPhonemeParser } from './roman/parser';
 import { rankCandidates } from './ranking/ranker';
 import { composePhonemes } from './telugu/composer';
@@ -90,11 +91,18 @@ const CORE_LEXICON: DictionaryEntry[] = [
   { roman: 'sneham', telugu: 'స్నేహం', aliases: ['snehamu'], frequency: 75_000 },
   { roman: 'jeevitham', telugu: 'జీవితం', aliases: ['jeevitam'], frequency: 80_000 },
   { roman: 'manasu', telugu: 'మనసు', frequency: 85_000 },
+  { roman: 'manchidi', telugu: 'మంచిది', frequency: 80_000 },
   { roman: 'hrudayam', telugu: 'హృదయం', aliases: ['hridayam'], frequency: 75_000 },
   { roman: 'kavitha', telugu: 'కవిత', aliases: ['kavita'], frequency: 70_000 },
   { roman: 'andamaina', telugu: 'అందమైన', aliases: ['andamaina', 'andamaina'], frequency: 80_000 },
   { roman: 'vennela', telugu: 'వెన్నెల', aliases: ['vennelaa'], frequency: 80_000 },
   { roman: 'prakruthi', telugu: 'ప్రకృతి', aliases: ['prakruti'], frequency: 70_000 },
+  {
+    roman: 'saamrajyam',
+    telugu: 'సామ్రాజ్యం',
+    aliases: ['saamraajyam', 'samrajyam', 'samraajyam'],
+    frequency: 70_000,
+  },
   { roman: 'amma', telugu: 'అమ్మ', frequency: 110_000 },
   { roman: 'nanna', telugu: 'నాన్న', frequency: 100_000 },
   { roman: 'anna', telugu: 'అన్న', frequency: 95_000 },
@@ -191,7 +199,7 @@ const CORE_LEXICON: DictionaryEntry[] = [
   { roman: 'neeku', telugu: 'నీకు', frequency: 70_000 },
   { roman: 'mana', telugu: 'మన', frequency: 65_000 },
   { roman: 'andaru', telugu: 'అందరూ', frequency: 70_000 },
-  { roman: 'andariki', telugu: 'అందరికీ', frequency: 65_000 },
+  { roman: 'andariki', telugu: 'అందరికి', frequency: 65_000 },
 
   { roman: 'kurnool', telugu: 'కర్నూలు', frequency: 50_000 },
   { roman: 'kadapa', telugu: 'కడప', frequency: 50_000 },
@@ -299,6 +307,7 @@ const CORE_LEXICON: DictionaryEntry[] = [
 export class TeluguTransliterationEngine {
   private readonly parser = new RomanPhonemeParser();
   private readonly morphology = new RomanTeluguMorphology();
+  private readonly teluguMorphology = new TeluguMorphology();
   private readonly dictionary: TeluguDictionary;
   constructor(dictionary: TeluguDictionary = new MemoryTeluguDictionary(CORE_LEXICON)) {
     this.dictionary = dictionary;
@@ -310,9 +319,12 @@ export class TeluguTransliterationEngine {
   transliterate(input: string, options: TransliterationOptions = {}): TransliterationResult {
     const maxCandidates = options.maxCandidates ?? 12;
     const candidates: TransliterationCandidate[] = [];
+    const exactDictionaryTexts = new Set<string>();
+    const conditionalTexts = new Set<string>();
     if (!input.trim()) return { input, best: null, candidates };
     if (options.useDictionary !== false) {
-      for (const entry of this.dictionary.lookup(input))
+      for (const entry of this.dictionary.lookup(input)) {
+        exactDictionaryTexts.add(entry.telugu);
         candidates.push({
           text: entry.telugu,
           score: 150 + Math.log10((entry.frequency ?? 1) + 1) * 10,
@@ -320,6 +332,7 @@ export class TeluguTransliterationEngine {
           phonemes: [],
           source: entry.tags?.includes('user') ? 'user' : 'dictionary',
         });
+      }
       if (input === input.toLowerCase())
         for (const { entry, distance } of fuzzyDictionaryMatches(
           input,
@@ -333,6 +346,60 @@ export class TeluguTransliterationEngine {
             phonemes: [],
             source: 'dictionary',
           });
+      const accusative = this.morphology.analyzeAccusative(input);
+      if (accusative)
+        for (const entry of this.dictionary.lookup(accusative.stem)) {
+          if (!entry.telugu.endsWith('ం')) continue;
+          candidates.push({
+            text: `${entry.telugu.slice(0, -1)}ాన్ని`,
+            score: 175 + Math.log10((entry.frequency ?? 1) + 1) * 2,
+            confidence: 0,
+            phonemes: [],
+            source: 'generated',
+          });
+        }
+      for (const emphatic of this.morphology.analyzeEmphatic(input))
+        for (const entry of this.dictionary.lookup(emphatic.stem)) {
+          if (!entry.telugu.endsWith('ు') && !entry.telugu.endsWith('ి')) continue;
+          candidates.push({
+            text: `${entry.telugu.slice(0, -1)}ే`,
+            score: 175 + Math.log10((entry.frequency ?? 1) + 1) * 2,
+            confidence: 0,
+            phonemes: [],
+            source: 'generated',
+          });
+        }
+      for (const conditional of this.morphology.analyzeConditional(input)) {
+        const stemEntries = this.dictionary.lookup(conditional.stem);
+        if (stemEntries.length) {
+          for (const entry of stemEntries) {
+            const text = this.teluguMorphology.inflectConditional(entry.telugu);
+            if (!text) continue;
+            conditionalTexts.add(text);
+            candidates.push({
+              text,
+              score: 175 + Math.log10((entry.frequency ?? 1) + 1) * 2,
+              confidence: 0,
+              phonemes: [],
+              source: 'generated',
+            });
+          }
+          continue;
+        }
+        for (const parse of this.parser.parse(conditional.stem, { beamWidth: 16 }).slice(0, 1)) {
+          const stem = composePhonemes(normalizePhonemes(parse.phonemes));
+          const text = this.teluguMorphology.inflectConditional(stem);
+          if (!text) continue;
+          conditionalTexts.add(text);
+          candidates.push({
+            text,
+            score: 165 + parse.score * 2,
+            confidence: 0,
+            phonemes: parse.phonemes,
+            source: 'generated',
+          });
+        }
+      }
     }
     const morphology = this.morphology.analyze(input);
     for (const parse of this.parser.parse(input, { beamWidth: options.beamWidth ?? 64 })) {
@@ -348,7 +415,13 @@ export class TeluguTransliterationEngine {
         (ratio > 4 ? -20 : ratio > 3 ? -10 : 10);
       candidates.push({ text, score, confidence: 0, phonemes, source: 'generated' });
     }
-    const ranked = rankCandidates(candidates, maxCandidates);
+    const viableCandidates = conditionalTexts.size
+      ? candidates.filter(
+          (candidate) =>
+            exactDictionaryTexts.has(candidate.text) || conditionalTexts.has(candidate.text),
+        )
+      : candidates;
+    const ranked = rankCandidates(viableCandidates, maxCandidates);
     return { input, best: ranked[0] ?? null, candidates: ranked };
   }
   private entries(): DictionaryEntry[] {

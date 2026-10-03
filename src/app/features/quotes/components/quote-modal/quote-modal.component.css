@@ -227,8 +227,51 @@
   font: inherit;
   resize: vertical;
 }
-.comment-form textarea {
+.comment-input {
+  position: relative;
   grid-column: 1 / -1;
+}
+.comment-suggestions {
+  position: absolute;
+  z-index: 5;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  width: min(280px, calc(100% - 16px));
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-lg);
+}
+.comment-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--text-primary);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.comment-suggestion:hover,
+.comment-suggestion.selected {
+  color: var(--text-on-active);
+  background: var(--bg-suggestion-active);
+}
+.comment-suggestion-hint {
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  background: var(--bg-tab-pill);
+  font-size: 10px;
 }
 .comment-form > button {
   justify-self: end;

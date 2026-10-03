@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
 
 describe('ApiService', () => {
@@ -88,13 +89,11 @@ describe('ApiService', () => {
     req.flush({ data: { _id: 'comment-2', body: 'తెలుగు వ్యాఖ్య', language: 'telugu' } });
   });
 
-  it('should surface backend failures', (done) => {
-    service.getQuotes().subscribe({
-      next: () => done.fail('Expected the request to fail'),
-      error: () => done(),
-    });
+  it('should surface backend failures', async () => {
+    const quotes = firstValueFrom(service.getQuotes());
 
     const req = httpTesting.expectOne('http://localhost:3000/api/v1/quotes');
     req.error(new ProgressEvent('Network error'));
+    await expect(quotes).rejects.toBeDefined();
   });
 });

@@ -5,8 +5,10 @@ export interface RomanMapping<T> {
   weight: number;
 }
 export const VOWELS: RomanMapping<Vowel>[] = [
-  ['ruu', 'ruu', 1],
-  ['ru', 'ru', 1],
+  ['R^I', 'ruu', 1],
+  ['Ruu', 'ruu', 1],
+  ['R^i', 'ru', 1],
+  ['Ru', 'ru', 2],
   ['aaa', 'aa', 0.7],
   ['aa', 'aa', 1],
   ['A', 'aa', 1],

@@ -143,7 +143,7 @@
                 type="button"
                 [class.active]="commentLanguage() === 'english'"
                 [attr.aria-pressed]="commentLanguage() === 'english'"
-                (click)="commentLanguage.set('english')"
+                (click)="setCommentLanguage('english')"
               >
                 English
               </button>
@@ -151,22 +151,50 @@
                 type="button"
                 [class.active]="commentLanguage() === 'telugu'"
                 [attr.aria-pressed]="commentLanguage() === 'telugu'"
-                (click)="commentLanguage.set('telugu')"
+                (click)="setCommentLanguage('telugu')"
               >
                 తెలుగు
               </button>
             </div>
-            <textarea
-              name="comment"
-              [ngModel]="commentDraft()"
-              (ngModelChange)="commentDraft.set($event)"
-              [attr.lang]="commentLanguage() === 'telugu' ? 'te' : 'en'"
-              maxlength="1500"
-              [placeholder]="
-                commentLanguage() === 'telugu' ? 'మీ వ్యాఖ్యను రాయండి' : 'Add to the conversation'
-              "
-              required
-            ></textarea>
+            <div class="comment-input">
+              <textarea
+                #commentTextarea
+                name="comment"
+                [ngModel]="commentDraft()"
+                (ngModelChange)="onCommentDraftChange($event)"
+                (keydown)="onCommentKeydown($event)"
+                (focus)="commentInputFocused = true"
+                (blur)="commentInputFocused = false"
+                [attr.lang]="commentLanguage() === 'telugu' ? 'te' : 'en'"
+                maxlength="1500"
+                [placeholder]="
+                  commentLanguage() === 'telugu' ? 'మీ వ్యాఖ్యను రాయండి' : 'Add to the conversation'
+                "
+                required
+              ></textarea>
+              @if (commentInputFocused && commentSuggestions().length) {
+                <div class="comment-suggestions" role="listbox" aria-label="Telugu suggestions">
+                  @for (
+                    suggestion of commentSuggestions();
+                    track suggestion.text;
+                    let index = $index
+                  ) {
+                    <button
+                      type="button"
+                      class="comment-suggestion"
+                      [class.selected]="index === selectedCommentSuggestionIndex()"
+                      [attr.aria-selected]="index === selectedCommentSuggestionIndex()"
+                      (mousedown)="$event.preventDefault(); selectCommentSuggestion(index)"
+                    >
+                      <span>{{ suggestion.text }}</span>
+                      @if (index === selectedCommentSuggestionIndex()) {
+                        <span class="comment-suggestion-hint">Tab</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
             <button type="submit" [disabled]="isPostingComment() || !commentDraft().trim()">
               {{
                 isPostingComment()

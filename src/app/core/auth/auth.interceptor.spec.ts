@@ -35,7 +35,7 @@ describe('authInterceptor', () => {
     httpClient.get('/api/test').subscribe();
 
     const req = httpTesting.expectOne('/api/test');
-    expect(req.request.headers.has('Authorization')).toBeFalse();
+    expect(req.request.headers.has('Authorization')).toBe(false);
     req.flush({});
   });
 
@@ -48,7 +48,7 @@ describe('authInterceptor', () => {
     httpClient.get('/api/test').subscribe();
 
     const req = httpTesting.expectOne('/api/test');
-    expect(req.request.headers.has('Authorization')).toBeTrue();
+    expect(req.request.headers.has('Authorization')).toBe(true);
     expect(req.request.headers.get('Authorization')).toBe('Bearer sample_jwt_token_123');
     req.flush({});
   });

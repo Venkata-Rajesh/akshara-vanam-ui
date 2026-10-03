@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, signal, Service } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, map, Observable, tap, throwError } from 'rxjs';
@@ -17,9 +17,7 @@ const TOKEN_KEY = 'auth_jwt_token_v2';
 const USER_KEY = 'auth_current_user_v2';
 const LEGACY_KEYS = ['test_auth_jwt_token', 'test_auth_current_user', 'test_auth_registered_users'];
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);

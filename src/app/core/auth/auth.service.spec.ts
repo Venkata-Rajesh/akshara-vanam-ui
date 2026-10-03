@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { vi } from 'vitest';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -15,7 +17,7 @@ describe('AuthService', () => {
     });
     service = TestBed.inject(AuthService);
     httpTesting = TestBed.inject(HttpTestingController);
-    spyOn(TestBed.inject(Router), 'navigate').and.returnValue(Promise.resolve(true));
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -28,20 +30,12 @@ describe('AuthService', () => {
   });
 
   it('should initialize unauthenticated by default if no stored session', () => {
-    expect(service.isAuthenticated()).toBeFalse();
+    expect(service.isAuthenticated()).toBe(false);
     expect(service.currentUser()).toBeNull();
   });
 
-  it('should authenticate user on successful login', (done) => {
-    service.login({ email: 'test@gmail.com', password: 'test123' }).subscribe({
-      next: (res) => {
-        expect(res.status).toBe('success');
-        expect(service.isAuthenticated()).toBeTrue();
-        expect(service.currentUser()?.email).toBe('test@gmail.com');
-        done();
-      },
-      error: done.fail,
-    });
+  it('should authenticate user on successful login', async () => {
+    const login = firstValueFrom(service.login({ email: 'test@gmail.com', password: 'test123' }));
 
     httpTesting.expectOne('http://localhost:3000/api/v1/auth/login').flush({
       data: {
@@ -56,19 +50,15 @@ describe('AuthService', () => {
       },
       message: 'Login successful',
     });
+
+    const res = await login;
+    expect(res.status).toBe('success');
+    expect(service.isAuthenticated()).toBe(true);
+    expect(service.currentUser()?.email).toBe('test@gmail.com');
   });
 
-  it('should clear session on logout', (done) => {
-    service.login({ email: 'test@gmail.com', password: 'test123' }).subscribe({
-      next: () => {
-        expect(service.isAuthenticated()).toBeTrue();
-        service.logout();
-        expect(service.isAuthenticated()).toBeFalse();
-        expect(service.currentUser()).toBeNull();
-        done();
-      },
-      error: done.fail,
-    });
+  it('should clear session on logout', async () => {
+    const login = firstValueFrom(service.login({ email: 'test@gmail.com', password: 'test123' }));
 
     httpTesting.expectOne('http://localhost:3000/api/v1/auth/login').flush({
       data: {
@@ -83,19 +73,22 @@ describe('AuthService', () => {
       },
       message: 'Login successful',
     });
+
+    await login;
+    expect(service.isAuthenticated()).toBe(true);
+    service.logout();
+    expect(service.isAuthenticated()).toBe(false);
+    expect(service.currentUser()).toBeNull();
   });
 
-  it('does not create a local session when the API is unavailable', (done) => {
-    service.login({ email: 'test@gmail.com', password: 'test123' }).subscribe({
-      next: () => done.fail('Expected the API error to be surfaced'),
-      error: () => {
-        expect(service.isAuthenticated()).toBeFalse();
-        done();
-      },
-    });
+  it('does not create a local session when the API is unavailable', async () => {
+    const login = firstValueFrom(service.login({ email: 'test@gmail.com', password: 'test123' }));
 
     httpTesting
       .expectOne('http://localhost:3000/api/v1/auth/login')
       .error(new ProgressEvent('Network error'));
+
+    await expect(login).rejects.toBeDefined();
+    expect(service.isAuthenticated()).toBe(false);
   });
 });

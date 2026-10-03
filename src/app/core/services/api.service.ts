@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
 import { ApiResponse } from '../auth/auth.models';
@@ -48,9 +48,7 @@ export interface CommentPage {
   meta: Record<string, unknown>;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${inject(API_BASE_URL)}/quotes`;

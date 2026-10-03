@@ -1,9 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { Toast, ToastType } from '../models/toast.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ToastService {
   private readonly _toasts = signal<Toast[]>([]);
   readonly toasts = this._toasts.asReadonly();

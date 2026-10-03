@@ -39,7 +39,7 @@ describe('Auth Guards', () => {
 
   it('authGuard should redirect unauthenticated users to /login', () => {
     const result = executeAuthGuard(mockRoute, mockState);
-    expect(result instanceof UrlTree).toBeTrue();
+    expect(result instanceof UrlTree).toBe(true);
     if (result instanceof UrlTree) {
       expect(result.toString()).toContain('/login');
     }
@@ -48,13 +48,13 @@ describe('Auth Guards', () => {
   it('authGuard should allow authenticated users to proceed', () => {
     authService.setSession({ id: '1', email: 'test@gmail.com', username: 'Test' }, 'mock_token');
     const result = executeAuthGuard(mockRoute, mockState);
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
   });
 
   it('guestGuard should redirect authenticated users to /quotes', () => {
     authService.setSession({ id: '1', email: 'test@gmail.com', username: 'Test' }, 'mock_token');
     const result = executeGuestGuard(mockRoute, mockState);
-    expect(result instanceof UrlTree).toBeTrue();
+    expect(result instanceof UrlTree).toBe(true);
     if (result instanceof UrlTree) {
       expect(result.toString()).toBe('/quotes');
     }
@@ -62,6 +62,6 @@ describe('Auth Guards', () => {
 
   it('guestGuard should allow unauthenticated users to access /login', () => {
     const result = executeGuestGuard(mockRoute, mockState);
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
   });
 });

@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
+  ElementRef,
   Component,
   effect,
   inject,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +22,11 @@ import { QuoteInput } from '../../../../core/services/api.service';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import {
+  activeRomanWord,
+  TeluguEditorEngine,
+  TransliterationCandidate,
+} from '../../../../core/telugu-engine';
 import { MarkdownEditorComponent } from '../../../../shared/components/markdown-editor/markdown-editor.component';
 
 @Component({
@@ -44,11 +51,17 @@ export class QuoteModalComponent {
   readonly comments = signal<QuoteComment[]>([]);
   readonly commentDraft = signal('');
   readonly commentLanguage = signal<PoetryLanguage>('english');
+  readonly commentSuggestions = signal<TransliterationCandidate[]>([]);
+  readonly selectedCommentSuggestionIndex = signal(0);
+  readonly commentTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('commentTextarea');
   readonly isLoadingComments = signal(false);
   readonly isPostingComment = signal(false);
   readonly showHiddenComments = signal(false);
   readonly editingCommentId = signal<string | null>(null);
   readonly commentEditDraft = signal('');
+  commentInputFocused = false;
+  private readonly commentTransliterator = new TeluguEditorEngine();
+  private commentComposition: { roman: string; start: number; end: number } | null = null;
 
   readonly form = signal<QuoteInput>({
     title: '',
@@ -138,9 +151,77 @@ export class QuoteModalComponent {
     return !!user && (user.role === 'admin' || user.id === authorId);
   }
 
+  setCommentLanguage(language: PoetryLanguage): void {
+    this.commentLanguage.set(language);
+    this.clearCommentSuggestions();
+    if (language === 'telugu') this.convertCommentDraft();
+  }
+
+  onCommentDraftChange(value: string): void {
+    if (this.commentLanguage() !== 'telugu') {
+      this.commentDraft.set(value);
+      this.clearCommentSuggestions();
+      return;
+    }
+
+    const textarea = this.commentTextarea()?.nativeElement;
+    const cursor = textarea?.selectionStart ?? value.length;
+    const converted = this.commentTransliterator.transliterateText(value, true);
+    const convertedCursor = this.commentTransliterator.transliterateText(
+      value.slice(0, cursor),
+      true,
+    ).length;
+    this.commentDraft.set(converted);
+    this.updateCommentSuggestions(converted, convertedCursor);
+    if (converted !== value) this.restoreCommentCursor(convertedCursor);
+  }
+
+  onCommentKeydown(event: KeyboardEvent): void {
+    const candidates = this.commentSuggestions();
+    if (!candidates.length) return;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.selectedCommentSuggestionIndex.update((index) =>
+        event.key === 'ArrowDown'
+          ? Math.min(index + 1, candidates.length - 1)
+          : Math.max(index - 1, 0),
+      );
+    } else if (event.key === 'Tab') {
+      event.preventDefault();
+      this.selectCommentSuggestion(this.selectedCommentSuggestionIndex());
+    } else if (event.key === 'Escape') {
+      this.clearCommentSuggestions();
+    }
+  }
+
+  selectCommentSuggestion(index: number, suffix = ' '): void {
+    const suggestion = this.commentSuggestions()[index];
+    const textarea = this.commentTextarea()?.nativeElement;
+    if (!suggestion || !textarea) return;
+
+    const active =
+      this.commentComposition ?? activeRomanWord(this.commentDraft(), textarea.selectionStart);
+    if (!active) return;
+    if (this.commentDraft().slice(active.start, active.end) !== active.roman) {
+      this.clearCommentSuggestions();
+      return;
+    }
+
+    const updated = `${this.commentDraft().slice(0, active.start)}${suggestion.text}${suffix}${this.commentDraft().slice(active.end)}`;
+    this.commentDraft.set(updated);
+    this.commentTransliterator.remember(active.roman, suggestion.text);
+    this.clearCommentSuggestions();
+    this.restoreCommentCursor(active.start + suggestion.text.length + suffix.length);
+  }
+
   submitComment(): void {
     const quote = this.quote();
-    const body = this.commentDraft().trim();
+    const draft = this.commentDraft().trim();
+    const body =
+      this.commentLanguage() === 'telugu'
+        ? this.commentTransliterator.transliterateText(draft)
+        : draft;
     if (!quote || !body || this.isPostingComment()) return;
     if (!this.isAuthenticated()) {
       this.signIn();
@@ -148,6 +229,7 @@ export class QuoteModalComponent {
     }
 
     this.isPostingComment.set(true);
+    this.clearCommentSuggestions();
     this.apiService.addComment(quote._id, body, this.commentLanguage()).subscribe({
       next: (comment) => {
         this.comments.update((items) => [comment, ...items]);
@@ -251,6 +333,56 @@ export class QuoteModalComponent {
         this.isLoadingComments.set(false);
       },
       error: () => this.isLoadingComments.set(false),
+    });
+  }
+
+  private convertCommentDraft(): void {
+    const textarea = this.commentTextarea()?.nativeElement;
+    const cursor = textarea?.selectionStart ?? this.commentDraft().length;
+    const current = this.commentDraft();
+    const converted = this.commentTransliterator.transliterateText(current);
+    this.commentDraft.set(converted);
+    if (converted !== current) {
+      const convertedCursor = this.commentTransliterator.transliterateText(
+        current.slice(0, cursor),
+      ).length;
+      this.restoreCommentCursor(convertedCursor);
+    }
+  }
+
+  private updateCommentSuggestions(value: string, cursor: number): void {
+    const active = activeRomanWord(value, cursor);
+    if (!active || active.roman.length < 2) {
+      this.clearCommentSuggestions();
+      return;
+    }
+
+    this.commentSuggestions.set(
+      this.commentTransliterator
+        .suggest({
+          before: value.slice(0, active.start),
+          current: active.roman,
+          after: value.slice(active.end),
+          languageMode: 'mixed',
+        })
+        .slice(0, 6),
+    );
+    this.commentComposition = active;
+    this.selectedCommentSuggestionIndex.set(0);
+  }
+
+  private clearCommentSuggestions(): void {
+    this.commentSuggestions.set([]);
+    this.selectedCommentSuggestionIndex.set(0);
+    this.commentComposition = null;
+  }
+
+  private restoreCommentCursor(position: number): void {
+    queueMicrotask(() => {
+      const textarea = this.commentTextarea()?.nativeElement;
+      if (!textarea) return;
+      textarea.focus();
+      textarea.setSelectionRange(position, position);
     });
   }
 
