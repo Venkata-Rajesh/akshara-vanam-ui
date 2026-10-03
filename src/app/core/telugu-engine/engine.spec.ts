@@ -39,6 +39,15 @@ describe('Telugu language engine', () => {
     expect(engine.transliterateWord('vennela').best?.text).toBe('వెన్నెల');
     expect(engine.transliterateWord('hyderabad').best?.text).toBe('హైదరాబాద్');
   });
+  it('uses curated spellings for common names, postpositions, and loanwords', () => {
+    expect(engine.transliterateWord('kooda').best?.text).toBe('కూడా');
+    expect(engine.transliterateWord('nundi').best?.text).toBe('నుండి');
+    expect(engine.transliterateWord('rajahmundry').best?.text).toBe('రాజమండ్రి');
+    expect(engine.transliterateWord('srinivas').best?.text).toBe('శ్రీనివాస్');
+    expect(engine.transliterateWord('mobile').best?.text).toBe('మొబైల్');
+    expect(engine.transliterateWord('andaru').best?.text).toBe('అందరూ');
+    expect(engine.transliterateWord('andariki').best?.text).toBe('అందరికీ');
+  });
   it('recognizes common informal long-vowel spellings', () => {
     expect(engine.transliterateWord('ela').best?.text).toBe('ఎలా');
   });
