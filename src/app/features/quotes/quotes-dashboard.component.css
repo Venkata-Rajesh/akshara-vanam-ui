@@ -683,6 +683,20 @@
   color: #fff8f8;
   background: #9f1239;
 }
+.restore-all-quotes-btn {
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  color: var(--gold-700);
+  background: var(--bg-surface);
+  font: 700 11px/1 'Noto Sans Telugu', sans-serif;
+  cursor: pointer;
+}
+.restore-all-quotes-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
 .hidden-quotes-count {
   display: grid;
   min-width: 18px;

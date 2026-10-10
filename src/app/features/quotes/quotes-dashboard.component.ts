@@ -18,6 +18,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { PoetryLanguage, Quote, QuoteReaction, QuoteStatus } from '../../core/models/quote.model';
 import { QuoteCardComponent } from './components/quote-card/quote-card.component';
 import { QuoteModalComponent } from './components/quote-modal/quote-modal.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-quotes-dashboard',
@@ -83,6 +84,7 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
   readonly editorQuote = signal<Quote | null>(null);
   readonly isEditorOpen = signal(false);
   readonly isSaving = signal(false);
+  readonly isRestoringAll = signal(false);
 
   // Data signals
   readonly quotes = signal<Quote[]>([]);
@@ -303,6 +305,10 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
       return;
     }
     const previousReaction = this.quotes().find((quote) => quote._id === quoteId)?.userReaction;
+    const isLastHiddenQuote =
+      reaction === null &&
+      previousReaction === 'dislike' &&
+      this.dislikedQuoteCount() === 1;
     this.apiService.setReaction(quoteId, reaction).subscribe({
       next: (summary) => {
         this.quotes.update((quotes) =>
@@ -313,11 +319,40 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
         if (reaction === 'dislike') {
           this.toast.info('Quote hidden. Open Hidden to restore it.');
         } else if (reaction === null && previousReaction === 'dislike') {
-          this.showDislikedQuotes.set(false);
+          if (isLastHiddenQuote && this.showDislikedQuotes()) this.showDislikedQuotes.set(false);
           this.toast.success('Quote restored to your collection.');
         }
       },
       error: (error) => this.toast.error(error.message || 'Unable to update reaction.'),
+    });
+  }
+
+  restoreAllDislikedQuotes(): void {
+    const hiddenQuotes = this.quotes().filter((quote) => quote.userReaction === 'dislike');
+    if (hiddenQuotes.length < 2 || this.isRestoringAll()) return;
+
+    this.isRestoringAll.set(true);
+    forkJoin(hiddenQuotes.map((quote) => this.apiService.setReaction(quote._id, null))).subscribe({
+      next: (summaries) => {
+        const summaryById = new Map(hiddenQuotes.map((quote, index) => [quote._id, summaries[index]]));
+        this.quotes.update((quotes) =>
+          quotes.map((quote) => {
+            const summary = summaryById.get(quote._id);
+            return summary ? { ...quote, ...summary } : quote;
+          }),
+        );
+        const selected = this.selectedQuote();
+        const selectedSummary = selected ? summaryById.get(selected._id) : undefined;
+        if (selected && selectedSummary) this.selectedQuote.set({ ...selected, ...selectedSummary });
+        this.showDislikedQuotes.set(false);
+        this.toast.success('All hidden quotes restored to your collection.');
+        this.isRestoringAll.set(false);
+      },
+      error: (error) => {
+        this.isRestoringAll.set(false);
+        this.loadQuotes();
+        this.toast.error(error.message || 'Unable to restore all hidden quotes.');
+      },
     });
   }
 

@@ -329,6 +329,17 @@
           </button>
         }
 
+        @if (showDislikedQuotes() && dislikedQuoteCount() > 1) {
+          <button
+            type="button"
+            class="restore-all-quotes-btn"
+            (click)="restoreAllDislikedQuotes()"
+            [disabled]="isRestoringAll()"
+          >
+            {{ isRestoringAll() ? 'Restoring…' : 'Restore all' }}
+          </button>
+        }
+
         <div class="search-box">
           <svg
             class="search-icon"
