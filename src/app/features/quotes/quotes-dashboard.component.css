@@ -21,9 +21,14 @@
   margin-bottom: 28px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
-  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+  backdrop-filter: blur(14px) saturate(135%);
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
   box-shadow: var(--shadow-md);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
 }
 .nav-brand {
   display: flex;
@@ -44,6 +49,13 @@
   font-family: 'Noto Serif Telugu', serif;
   font-size: 29px;
   line-height: 1;
+  transition:
+    transform 260ms var(--ease-motion),
+    box-shadow 260ms ease;
+}
+.nav-brand:hover .brand-icon {
+  transform: translateY(-2px) rotate(-3deg);
+  box-shadow: 0 10px 22px rgba(101, 31, 24, 0.28);
 }
 .brand-text h1 {
   margin: 0;
@@ -76,8 +88,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--gold-600);
-  box-shadow: 0 0 0 4px var(--gold-wash);
+  background: var(--success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 14%, transparent);
   content: '';
   transform: translateY(-50%);
 }
@@ -105,6 +117,10 @@
   color: var(--maroon-700);
   background: var(--gold-wash);
 }
+.theme-toggle-btn:active,
+.logout-btn:active {
+  transform: scale(0.97);
+}
 .theme-icon.sun {
   color: #b46f17;
 }
@@ -127,7 +143,7 @@
   height: 32px;
   border-radius: 50%;
   color: #fffaf0;
-  background: var(--maroon-600);
+  background-color: var(--maroon-600);
   font-size: 12px;
   font-weight: 700;
 }
@@ -259,6 +275,10 @@
   border-radius: var(--radius-xl);
   background: var(--hero-surface);
   box-shadow: var(--shadow-lg);
+  isolation: isolate;
+  transition:
+    border-color 240ms ease,
+    box-shadow 280ms ease;
 }
 .literary-hero::before {
   position: absolute;
@@ -355,8 +375,15 @@
   display: flex;
   flex-direction: column;
   min-height: 270px;
+  min-width: 0;
   padding: 28px 28px 22px;
   border-left: 1px solid var(--gold-border);
+}
+.voice-slide {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  animation: voice-enter 460ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .verse-topline {
   display: flex;
@@ -381,9 +408,10 @@
   letter-spacing: 0.16em;
 }
 .hero-verse blockquote {
-  flex: 1;
   margin: 0;
   white-space: pre-line;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
   color: var(--maroon-700);
   font:
     500 clamp(21px, 2.5vw, 31px)/1.55 'Noto Serif Telugu',
@@ -398,6 +426,7 @@
   font:
     600 12px/1.4 'Noto Sans Telugu',
     sans-serif;
+  flex-wrap: wrap;
 }
 .hero-verse figcaption strong {
   color: var(--maroon-700);
@@ -427,6 +456,11 @@
   color: var(--maroon-700);
   background: transparent;
   cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    width 220ms ease;
 }
 .verse-control {
   width: 28px;
@@ -451,6 +485,16 @@
   border-radius: 999px;
   background: var(--gold-600);
 }
+@keyframes voice-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .curation-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr) 2.2fr;
@@ -459,13 +503,17 @@
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
-  background: var(--border-subtle);
+  background: color-mix(in srgb, var(--success) 18%, var(--border-subtle));
   box-shadow: var(--shadow-sm);
 }
 .stat-card {
   min-height: 96px;
   padding: 18px 20px;
   background: var(--bg-surface);
+  transition: background-color 220ms ease;
+}
+.stat-card:hover {
+  background: var(--bg-surface-elevated);
 }
 .stat-num {
   color: var(--maroon-700);
@@ -535,7 +583,9 @@
   padding: 8px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  backdrop-filter: blur(10px) saturate(125%);
+  -webkit-backdrop-filter: blur(10px) saturate(125%);
   box-shadow: var(--shadow-sm);
 }
 .editor-tools-group {
@@ -558,10 +608,15 @@
     sans-serif;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    transform 180ms var(--ease-motion),
+    background-color 180ms ease,
+    box-shadow 220ms ease;
 }
 .add-quote-btn:hover {
   background: var(--maroon-600);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(101, 31, 24, 0.24);
 }
 .plus-icon {
   display: grid;
@@ -596,11 +651,48 @@
     700 11px/1.1 'Noto Sans Telugu',
     sans-serif;
   cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms var(--ease-motion);
 }
 .language-btn.active,
 .layout-btn.active {
   color: #fff9ed;
   background: var(--maroon-700);
+  box-shadow: 0 2px 7px rgba(80, 31, 24, 0.16);
+}
+.hidden-quotes-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid rgba(127, 29, 51, 0.22);
+  border-radius: var(--radius-md);
+  color: #9f1239;
+  background: rgba(225, 29, 72, 0.07);
+  font:
+    700 11px/1 'Noto Sans Telugu',
+    sans-serif;
+  cursor: pointer;
+}
+.hidden-quotes-toggle.active {
+  border-color: #9f1239;
+  color: #fff8f8;
+  background: #9f1239;
+}
+.hidden-quotes-count {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0 4px;
+  border-radius: 999px;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  font-size: 10px;
 }
 .search-box {
   position: relative;
@@ -624,6 +716,10 @@
   font:
     400 12px/1.3 'Noto Sans Telugu',
     sans-serif;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 .search-box input:focus {
   outline: 0;
@@ -659,25 +755,46 @@
     600 11px/1 'Noto Sans Telugu',
     sans-serif;
   cursor: pointer;
+  transition:
+    transform 180ms var(--ease-motion),
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 .tag-pill:hover {
   border-color: var(--gold-600);
   color: var(--maroon-700);
+  transform: translateY(-1px);
 }
 .tag-pill.active {
-  color: var(--maroon-700);
-  border-color: var(--gold-border);
-  background: var(--gold-wash);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  background: color-mix(in srgb, var(--success) 10%, var(--bg-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 12%, transparent);
 }
 .quotes-container.grid-layout {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 18px;
 }
+.quotes-container app-quote-card {
+  animation: collection-enter 380ms var(--ease-motion) both;
+}
 .quotes-container.list-layout {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+@keyframes collection-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .loader-container,
 .empty-state {
@@ -721,6 +838,19 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quotes-container app-quote-card {
+    animation: none;
+  }
+  .voice-slide {
+    animation: none;
+  }
+  .verse-control,
+  .voice-dot {
+    transition: none;
   }
 }
 

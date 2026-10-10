@@ -6,9 +6,20 @@
 
 .quote-card {
   position: relative;
+  isolation: isolate;
   background: var(--bg-card);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 7px,
+      color-mix(in srgb, var(--text-primary) 1.5%, transparent) 8px
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--bg-card) 96%, white),
+      var(--bg-card) 66%,
+      color-mix(in srgb, var(--bg-card) 95%, var(--gold-wash))
+    );
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   padding: 24px;
@@ -18,22 +29,23 @@
   cursor: pointer;
   overflow: hidden;
   transition:
-    transform var(--duration-standard) var(--ease-motion),
-    border-color var(--duration-standard) var(--ease-motion),
-    box-shadow var(--duration-standard) var(--ease-motion),
-    background var(--duration-standard) ease;
+    transform 280ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    border-color 220ms ease,
+    box-shadow 280ms ease,
+    background-color 220ms ease;
   box-shadow: var(--shadow-sm);
   min-height: 220px;
   height: 100%;
   transform-origin: center center;
-  will-change: transform, box-shadow;
 }
 
 .quote-card:hover,
 .quote-card:focus-visible {
-  transform: translateY(-5px);
+  transform: translate3d(0, -4px, 0);
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  box-shadow:
+    0 16px 30px -18px rgba(47, 33, 27, 0.4),
+    var(--shadow-glow);
   outline: none;
 }
 
@@ -52,6 +64,59 @@
 
 .quote-card:hover .card-glow {
   opacity: 1;
+}
+
+.reaction-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: heart-burst 900ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  isolation: isolate;
+}
+.reaction-burst::before {
+  position: absolute;
+  z-index: -1;
+  width: 126px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 228, 230, 0.92), rgba(255, 228, 230, 0) 72%);
+  box-shadow: 0 0 34px rgba(225, 29, 72, 0.16);
+  content: '';
+}
+.reaction-burst svg {
+  width: 74px;
+  height: 74px;
+  overflow: visible;
+  filter: drop-shadow(0 7px 12px rgba(142, 49, 35, 0.3));
+}
+.heart-shape {
+  stroke: rgba(255, 255, 255, 0.88);
+  stroke-width: 1.25;
+}
+.heart-crack {
+  filter: drop-shadow(1px 0 0 rgba(100, 39, 31, 0.42));
+}
+
+@keyframes heart-burst {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.25) rotate(-12deg);
+  }
+  28% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.12) rotate(4deg);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-38px) scale(0.84) rotate(5deg);
+  }
 }
 
 /* Watermark Quote Mark */
@@ -189,12 +254,53 @@
   font-size: 12px;
   cursor: pointer;
 }
+.like-heart-icon,
+.broken-heart-icon {
+  flex: 0 0 auto;
+  color: #e11d48;
+}
+.like-heart-icon {
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(127, 29, 51, 0.22);
+}
+.broken-heart-icon {
+  filter: drop-shadow(0 1px 1px rgba(127, 29, 51, 0.2));
+}
 
-.reaction-actions button:hover,
-.reaction-actions button.active {
+.reaction-actions button:hover {
   border-color: var(--border-accent);
   color: var(--maroon-700);
   background: var(--gold-wash);
+}
+.reaction-actions button.active.like {
+  border-color: rgba(225, 29, 72, 0.34);
+  color: #be123c;
+  background: rgba(225, 29, 72, 0.1);
+}
+.reaction-actions button.active.dislike {
+  border-color: rgba(127, 29, 51, 0.28);
+  color: #7f1d33;
+  background: rgba(127, 29, 51, 0.08);
+}
+.reaction-actions button.like:hover,
+.reaction-actions button.dislike:hover {
+  border-color: rgba(225, 29, 72, 0.3);
+  color: #be123c;
+  background: rgba(225, 29, 72, 0.07);
+}
+.reaction-actions .restore-quote-btn {
+  min-width: 0;
+  gap: 5px;
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 9%, var(--bg-surface-glass));
+  font-size: 11px;
+  font-weight: 700;
+}
+.reaction-actions .restore-quote-btn:hover {
+  border-color: color-mix(in srgb, var(--success) 55%, transparent);
+  background: color-mix(in srgb, var(--success) 16%, var(--bg-surface-glass));
 }
 
 .card-footer {
@@ -217,7 +323,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--maroon-700), var(--gold-600));
+  background-color: var(--maroon-700);
   color: #ffffff;
   font-weight: 700;
   font-size: 14px;
@@ -274,4 +380,10 @@
   border-color: transparent;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reaction-burst {
+    display: none;
+  }
 }

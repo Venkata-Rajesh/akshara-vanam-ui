@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   OnInit,
   computed,
   inject,
@@ -12,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiService, QuoteInput } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
+import { authorAvatarColor } from '../../core/utils/author-initial';
 import { ThemeService } from '../../core/services/theme.service';
 import { PoetryLanguage, Quote, QuoteReaction, QuoteStatus } from '../../core/models/quote.model';
 import { QuoteCardComponent } from './components/quote-card/quote-card.component';
@@ -24,7 +26,7 @@ import { QuoteModalComponent } from './components/quote-modal/quote-modal.compon
   styleUrl: './quotes-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QuotesDashboardComponent implements OnInit {
+export class QuotesDashboardComponent implements OnDestroy, OnInit {
   private readonly authService = inject(AuthService);
   private readonly apiService = inject(ApiService);
   private readonly toast = inject(ToastService);
@@ -33,6 +35,7 @@ export class QuotesDashboardComponent implements OnInit {
   readonly themeService = inject(ThemeService);
 
   readonly currentUser = this.authService.currentUser;
+  readonly avatarColor = authorAvatarColor;
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly isAdmin = computed(() => this.currentUser()?.role === 'admin');
   readonly isDark = this.themeService.isDark;
@@ -65,12 +68,17 @@ export class QuotesDashboardComponent implements OnInit {
   ] as const;
   readonly activeVoiceIndex = signal(0);
   readonly activeVoice = computed(() => this.featuredVoices[this.activeVoiceIndex()]);
+  readonly isVoiceRotationPaused = signal(
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  private voiceRotationTimer?: ReturnType<typeof setInterval>;
 
   // View state signals
   readonly layoutMode = signal<'grid' | 'list'>('grid');
   readonly searchQuery = signal('');
   readonly selectedTag = signal<string | null>(null);
   readonly selectedPoetryLanguage = signal<PoetryLanguage | 'all'>('all');
+  readonly showDislikedQuotes = signal(false);
   readonly selectedQuote = signal<Quote | null>(null);
   readonly editorQuote = signal<Quote | null>(null);
   readonly isEditorOpen = signal(false);
@@ -98,21 +106,28 @@ export class QuotesDashboardComponent implements OnInit {
     const query = this.searchQuery().trim().toLowerCase();
     const tag = this.selectedTag();
     const language = this.selectedPoetryLanguage();
+    const showDisliked = this.showDislikedQuotes();
     const list = this.quotes();
 
     return list.filter((q) => {
+      const matchesVisibility = showDisliked
+        ? q.userReaction === 'dislike'
+        : q.userReaction !== 'dislike';
       const matchesQuery =
         !query ||
         q.content.toLowerCase().includes(query) ||
         q.author.toLowerCase().includes(query) ||
         (q.title || '').toLowerCase().includes(query);
 
-      const matchesTag = !tag || (Array.isArray(q.tags) && q.tags.includes(tag));
-      const matchesLanguage = language === 'all' || q.language === language;
+      const matchesTag = showDisliked || !tag || (Array.isArray(q.tags) && q.tags.includes(tag));
+      const matchesLanguage = showDisliked || language === 'all' || q.language === language;
 
-      return matchesQuery && matchesTag && matchesLanguage;
+      return matchesVisibility && matchesQuery && matchesTag && matchesLanguage;
     });
   });
+  readonly dislikedQuoteCount = computed(
+    () => this.quotes().filter((quote) => quote.userReaction === 'dislike').length,
+  );
 
   readonly stats = computed(() => {
     const list = this.quotes();
@@ -126,6 +141,9 @@ export class QuotesDashboardComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.voiceRotationTimer = setInterval(() => {
+      if (!this.isVoiceRotationPaused()) this.showNextVoice();
+    }, 6500);
     this.loadQuotes();
     if (this.isAdmin()) this.loadPendingQuotes();
     this.route.queryParamMap.subscribe((params) => {
@@ -137,8 +155,19 @@ export class QuotesDashboardComponent implements OnInit {
     });
   }
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  ngOnDestroy(): void {
+    if (this.voiceRotationTimer) clearInterval(this.voiceRotationTimer);
+  }
+
+  toggleTheme(event?: MouseEvent): void {
+    const bounds =
+      event?.currentTarget instanceof HTMLElement
+        ? event.currentTarget.getBoundingClientRect()
+        : null;
+    const origin = bounds
+      ? { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }
+      : undefined;
+    this.themeService.toggleTheme(origin);
   }
 
   showPreviousVoice(): void {
@@ -153,6 +182,10 @@ export class QuotesDashboardComponent implements OnInit {
 
   selectVoice(index: number): void {
     this.activeVoiceIndex.set(index);
+  }
+
+  toggleVoiceRotation(): void {
+    this.isVoiceRotationPaused.update((paused) => !paused);
   }
 
   loadQuotes(): void {
@@ -179,6 +212,24 @@ export class QuotesDashboardComponent implements OnInit {
 
   setLanguageFilter(language: PoetryLanguage | 'all'): void {
     this.selectedPoetryLanguage.set(language);
+  }
+
+  toggleDislikedQuotes(): void {
+    const showDisliked = !this.showDislikedQuotes();
+    this.showDislikedQuotes.set(showDisliked);
+    if (showDisliked) {
+      this.selectedTag.set(null);
+      this.selectedPoetryLanguage.set('all');
+    }
+  }
+
+  resetQuoteFilters(): void {
+    if (this.showDislikedQuotes()) {
+      this.showDislikedQuotes.set(false);
+      return;
+    }
+    this.searchQuery.set('');
+    this.selectedTag.set(null);
   }
 
   openQuoteModal(quote: Quote): void {
@@ -251,6 +302,7 @@ export class QuotesDashboardComponent implements OnInit {
       this.openSignIn();
       return;
     }
+    const previousReaction = this.quotes().find((quote) => quote._id === quoteId)?.userReaction;
     this.apiService.setReaction(quoteId, reaction).subscribe({
       next: (summary) => {
         this.quotes.update((quotes) =>
@@ -258,6 +310,12 @@ export class QuotesDashboardComponent implements OnInit {
         );
         const selected = this.selectedQuote();
         if (selected?._id === quoteId) this.selectedQuote.set({ ...selected, ...summary });
+        if (reaction === 'dislike') {
+          this.toast.info('Quote hidden. Open Hidden to restore it.');
+        } else if (reaction === null && previousReaction === 'dislike') {
+          this.showDislikedQuotes.set(false);
+          this.toast.success('Quote restored to your collection.');
+        }
       },
       error: (error) => this.toast.error(error.message || 'Unable to update reaction.'),
     });

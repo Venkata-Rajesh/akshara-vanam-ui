@@ -60,33 +60,35 @@
   z-index: 100;
 }
 
-.theme-toggle-pill {
+.auth-theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   background: var(--bg-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: 9px 14px;
-  border-radius: var(--radius-lg);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
+  border-radius: 12px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   box-shadow: var(--shadow-sm);
-  transition: all 0.3s var(--ease-motion);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 180ms var(--ease-motion);
 }
 
-.theme-toggle-pill:hover {
+.auth-theme-toggle:hover {
   background: var(--bg-surface-glass-hover);
   border-color: var(--border-glow);
   transform: translateY(-2px);
   box-shadow: var(--shadow-glow);
 }
 
-.theme-toggle-pill:active {
+.auth-theme-toggle:active {
   transform: translateY(0);
 }
 
@@ -222,8 +224,12 @@ input {
 }
 
 input::placeholder {
-  color: var(--text-dim);
+  color: var(--text-secondary);
+  opacity: 1;
   transition: opacity 0.2s ease;
+}
+.input-wrapper input.password-input {
+  padding-right: 52px;
 }
 
 input:focus {
@@ -628,5 +634,38 @@ button.ghost:active {
   .container.right-panel-active .sign-up-container {
     opacity: 1;
     display: flex;
+  }
+}
+
+@media (max-width: 768px) and (max-height: 720px) {
+  :host {
+    justify-content: flex-start;
+    min-height: 100svh;
+    height: auto;
+    padding: 76px 16px 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .auth-wrapper {
+    flex: 0 0 auto;
+    margin: 0 auto;
+  }
+
+  .form-container {
+    justify-content: flex-start;
+    padding: 64px 20px 18px;
+  }
+
+  .auth-header {
+    margin-bottom: 12px;
+  }
+
+  .input-group {
+    margin-bottom: 8px;
+  }
+
+  .submit-btn {
+    margin-top: 2px;
   }
 }

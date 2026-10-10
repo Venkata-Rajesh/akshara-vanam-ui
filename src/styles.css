@@ -7,16 +7,16 @@
 :root.light,
 [data-theme='light'] {
   /* Surfaces */
-  --bg-main: #f6f0e5;
-  --bg-surface: rgba(255, 252, 244, 0.88);
-  --bg-surface-elevated: rgba(255, 254, 250, 0.97);
-  --bg-surface-glass: rgba(255, 251, 242, 0.72);
-  --bg-surface-glass-hover: rgba(255, 255, 252, 0.94);
-  --bg-card: rgba(255, 252, 244, 0.92);
-  --bg-input: #f7eedf;
-  --bg-input-focus: #fffdf8;
-  --bg-tab-pill: #eee2cc;
-  --bg-editor-toolbar: rgba(255, 251, 242, 0.86);
+  --bg-main: #f5f4ee;
+  --bg-surface: rgba(255, 254, 249, 0.9);
+  --bg-surface-elevated: rgba(255, 255, 251, 0.98);
+  --bg-surface-glass: rgba(255, 254, 248, 0.76);
+  --bg-surface-glass-hover: rgba(255, 255, 252, 0.96);
+  --bg-card: rgba(255, 254, 249, 0.94);
+  --bg-input: #f4f2e9;
+  --bg-input-focus: #fffef9;
+  --bg-tab-pill: #e9eadf;
+  --bg-editor-toolbar: rgba(255, 254, 248, 0.9);
   --bg-suggestion-active: #f1dfbb;
   --bg-modal: rgba(255, 252, 244, 0.98);
   --bg-modal-backdrop: rgba(15, 23, 42, 0.45);
@@ -24,7 +24,7 @@
   /* Ambient Mesh Gradients */
   --bg-ambient-1: rgba(158, 93, 28, 0.09);
   --bg-ambient-2: rgba(128, 34, 25, 0.06);
-  --bg-ambient-3: rgba(51, 103, 80, 0.05);
+  --bg-ambient-3: rgba(54, 119, 87, 0.09);
 
   /* Borders */
   --border-subtle: rgba(15, 23, 42, 0.08);
@@ -98,7 +98,7 @@
   --focus-ring: rgba(182, 122, 37, 0.2);
   --focus-ring-strong: rgba(142, 49, 35, 0.34);
   --danger: #a33b31;
-  --success: #3d7658;
+  --success: #3f7656;
 }
 
 /* ==========================================================================
@@ -124,7 +124,7 @@
   /* Ambient Mesh Gradients */
   --bg-ambient-1: rgba(177, 103, 30, 0.12);
   --bg-ambient-2: rgba(150, 47, 29, 0.12);
-  --bg-ambient-3: rgba(77, 118, 83, 0.08);
+  --bg-ambient-3: rgba(86, 145, 103, 0.13);
 
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.08);
@@ -192,8 +192,8 @@
 html {
   scroll-behavior: smooth;
   transition:
-    background-color 0.35s var(--ease-motion),
-    color 0.35s var(--ease-motion);
+    background-color 0.65s var(--ease-motion),
+    color 0.65s var(--ease-motion);
 }
 
 button,
@@ -201,12 +201,58 @@ input,
 textarea,
 select {
   transition:
-    background-color 0.25s var(--ease-motion),
-    border-color 0.25s var(--ease-motion),
-    box-shadow 0.25s var(--ease-motion),
-    color 0.25s var(--ease-motion),
-    transform 0.25s var(--ease-motion),
-    opacity 0.25s var(--ease-motion);
+    background-color var(--duration-standard) var(--ease-motion),
+    border-color var(--duration-standard) var(--ease-motion),
+    box-shadow var(--duration-standard) var(--ease-motion),
+    color var(--duration-standard) var(--ease-motion),
+    transform var(--duration-standard) var(--ease-motion),
+    opacity var(--duration-standard) var(--ease-motion);
+}
+
+.theme-toggle-btn {
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 180ms var(--ease-motion);
+}
+.theme-toggle-btn svg {
+  grid-area: 1 / 1;
+}
+.theme-icon {
+  transform-origin: center;
+}
+.theme-icon-enter {
+  animation: theme-icon-in 600ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.theme-icon-leave {
+  animation: theme-icon-out 420ms ease-in both;
+  pointer-events: none;
+}
+@keyframes theme-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-35deg) scale(0.72);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(5deg) scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+@keyframes theme-icon-out {
+  from {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(30deg) scale(0.74);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -264,59 +310,172 @@ body::before {
     radial-gradient(circle at 50% 80%, var(--bg-ambient-3) 0%, transparent 45%);
   z-index: -1;
   pointer-events: none;
-  animation: ambientMeshGlow 18s ease-in-out infinite alternate;
+  animation: ambientMeshGlow 24s ease-in-out infinite alternate;
   transition: background 0.35s var(--ease-smooth);
 }
 
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--text-primary) 11%, transparent) 0.55px,
+    transparent 0.8px
+  );
+  background-size: 7px 7px;
+  content: '';
+  opacity: 0.2;
+  pointer-events: none;
+  transition: opacity 700ms ease;
+}
+
 @keyframes ambientMeshGlow {
-  0% {
-    transform: scale(1) rotate(0deg);
-    filter: blur(40px);
+  from {
+    opacity: 0.72;
+    transform: scale(1);
   }
-  50% {
-    transform: scale(1.08) rotate(1deg);
-    filter: blur(55px);
+  to {
+    opacity: 1;
+    transform: scale(1.035);
+  }
+}
+
+/* Small theme scene stays near the switch and never blocks interaction. */
+html[data-theme-transition]::before {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-theme-transition='nightfall']::before,
+html[data-theme-transition='sunrise']::before {
+  background:
+    radial-gradient(circle, #fff9e2 0 1.5px, transparent 2.5px)
+      calc(var(--theme-origin-x, 50vw) + 36px) calc(var(--theme-origin-y, 50vh) - 34px) / 5px 5px
+      no-repeat,
+    linear-gradient(135deg, transparent 43%, rgba(255, 249, 221, 0.94) 49%, transparent 56%)
+      calc(var(--theme-origin-x, 50vw) - 52px) calc(var(--theme-origin-y, 50vh) - 76px) / 100px 3px
+      no-repeat,
+    radial-gradient(circle, #f5edcf 0 1.2px, transparent 2px)
+      calc(var(--theme-origin-x, 50vw) - 21px) calc(var(--theme-origin-y, 50vh) + 12px) / 5px 5px
+      no-repeat,
+    linear-gradient(135deg, transparent 44%, rgba(245, 237, 207, 0.88) 50%, transparent 57%)
+      calc(var(--theme-origin-x, 50vw) - 104px) calc(var(--theme-origin-y, 50vh) - 8px) / 76px 2px
+      no-repeat,
+    radial-gradient(circle, #fff9e2 0 1.4px, transparent 2.2px)
+      calc(var(--theme-origin-x, 50vw) + 68px) calc(var(--theme-origin-y, 50vh) - 96px) / 5px 5px
+      no-repeat,
+    linear-gradient(135deg, transparent 43%, rgba(255, 249, 221, 0.84) 50%, transparent 57%)
+      calc(var(--theme-origin-x, 50vw) - 8px) calc(var(--theme-origin-y, 50vh) - 132px) / 64px 2px
+      no-repeat,
+    radial-gradient(circle, #fff9e2 0 1.1px, transparent 1.9px)
+      calc(var(--theme-origin-x, 50vw) - 92px) calc(var(--theme-origin-y, 50vh) - 49px) / 4px 4px
+      no-repeat,
+    radial-gradient(circle, #e9f2f4 0 1.2px, transparent 2px)
+      calc(var(--theme-origin-x, 50vw) + 104px) calc(var(--theme-origin-y, 50vh) + 19px) / 5px 5px
+      no-repeat,
+    radial-gradient(circle, #fff9e2 0 1.3px, transparent 2.1px)
+      calc(var(--theme-origin-x, 50vw) - 128px) calc(var(--theme-origin-y, 50vh) + 64px) / 5px 5px
+      no-repeat,
+    radial-gradient(circle, #e9f2f4 0 1.1px, transparent 1.9px)
+      calc(var(--theme-origin-x, 50vw) + 20px) calc(var(--theme-origin-y, 50vh) - 151px) / 4px 4px
+      no-repeat,
+    linear-gradient(135deg, transparent 44%, rgba(255, 249, 221, 0.76) 50%, transparent 57%)
+      calc(var(--theme-origin-x, 50vw) + 72px) calc(var(--theme-origin-y, 50vh) - 43px) / 54px 2px
+      no-repeat;
+}
+
+html[data-theme-transition='nightfall']::before {
+  animation: stars-fall 1.75s cubic-bezier(0.25, 0.7, 0.35, 1) both;
+}
+
+html[data-theme-transition='sunrise']::before {
+  animation: stars-clear 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes stars-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(12px, -10px, 0);
+  }
+  16% {
+    opacity: 0.88;
+  }
+  72% {
+    opacity: 0.72;
   }
   100% {
-    transform: scale(1.02) rotate(-1deg);
-    filter: blur(40px);
-  }
-}
-
-/* ==========================================================================
-   View Transitions API (Page Transitions)
-   ========================================================================== */
-::view-transition-old(root) {
-  animation: 0.35s var(--ease-motion) both pageOut;
-}
-
-::view-transition-new(root) {
-  animation: 0.45s var(--ease-motion) both pageIn;
-}
-
-@keyframes pageOut {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
-  }
-  to {
     opacity: 0;
-    transform: scale(0.97) translateY(-12px);
-    filter: blur(4px);
+    transform: translate3d(-54vw, 68vh, 0);
   }
 }
 
-@keyframes pageIn {
-  from {
-    opacity: 0;
-    transform: scale(1.03) translateY(16px);
-    filter: blur(6px);
+@keyframes stars-clear {
+  0% {
+    opacity: 0.72;
+    transform: translate3d(0, 0, 0);
   }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
+  100% {
+    opacity: 0;
+    transform: translate3d(-24px, -15vh, 0);
+  }
+}
+
+/* Sunrise and nightfall overlays sit above the app without blocking interaction. */
+html[data-theme-transition]::after {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  content: '';
+  pointer-events: none;
+  opacity: 0;
+  clip-path: circle(0 at var(--theme-origin-x, 50vw) var(--theme-origin-y, 50vh));
+  animation: theme-scene-arrive 1.55s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+html[data-theme-transition='sunrise']::after {
+  background:
+    radial-gradient(
+      circle at var(--theme-origin-x, 50vw) var(--theme-origin-y, 50vh),
+      rgba(244, 205, 125, 0.24),
+      transparent 150px
+    ),
+    linear-gradient(145deg, rgba(255, 249, 224, 0.24), rgba(205, 224, 203, 0.12));
+}
+
+html[data-theme-transition='nightfall']::after {
+  background: radial-gradient(
+    circle at var(--theme-origin-x, 50vw) var(--theme-origin-y, 50vh),
+    rgba(83, 116, 137, 0.2),
+    transparent 175px
+  );
+}
+
+@keyframes theme-scene-arrive {
+  0% {
+    clip-path: circle(0 at var(--theme-origin-x, 50vw) var(--theme-origin-y, 50vh));
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.72;
+  }
+  72% {
+    clip-path: circle(
+      var(--theme-reveal-radius, 150vmax) at var(--theme-origin-x, 50vw) var(--theme-origin-y, 50vh)
+    );
+    opacity: 0.72;
+  }
+  86% {
+    opacity: 0.72;
+  }
+  100% {
+    clip-path: circle(
+      var(--theme-reveal-radius, 150vmax) at var(--theme-origin-x, 50vw) var(--theme-origin-y, 50vh)
+    );
+    opacity: 0;
   }
 }
 

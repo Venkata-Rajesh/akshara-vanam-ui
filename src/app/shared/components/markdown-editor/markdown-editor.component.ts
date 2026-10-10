@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TeluguEditorEngine, TransliterationCandidate, activeRomanWord } from '../../../core/telugu-engine';
+import {
+  TeluguEditorEngine,
+  TransliterationCandidate,
+  activeRomanWord,
+} from '../../../core/telugu-engine';
 
 @Component({
   selector: 'app-markdown-editor',
@@ -49,21 +53,24 @@ import { TeluguEditorEngine, TransliterationCandidate, activeRomanWord } from '.
           >
             ❞
           </button>
-          <button type="button" class="toolbar-btn convert-btn" (click)="convertAll()" title="Convert all Roman Telugu">
-            అ→అ
-          </button>
-        </div>
-
-        <div class="toolbar-group">
-          <!-- Language Toggle -->
-          <div
-            class="lang-toggle-pill"
-            (click)="toggleLanguage()"
-            [class.telugu]="language() === 'telugu'"
-          >
-            <div class="lang-slider"></div>
-            <span class="lang-label" [class.active]="language() === 'english'">English</span>
-            <span class="lang-label" [class.active]="language() === 'telugu'">తెలుగు</span>
+          <div class="convert-language-group">
+            <button
+              type="button"
+              class="toolbar-btn convert-btn"
+              (click)="convertAll()"
+              title="Convert all Roman Telugu"
+            >
+              అ→అ
+            </button>
+            <div
+              class="lang-toggle-pill"
+              (click)="toggleLanguage()"
+              [class.telugu]="language() === 'telugu'"
+            >
+              <div class="lang-slider"></div>
+              <span class="lang-label" [class.active]="language() === 'english'">English</span>
+              <span class="lang-label" [class.active]="language() === 'telugu'">తెలుగు</span>
+            </div>
           </div>
         </div>
       </div>
@@ -95,7 +102,9 @@ import { TeluguEditorEngine, TransliterationCandidate, activeRomanWord } from '.
               (mousedown)="$event.preventDefault(); selectSuggestion(index, ' ')"
             >
               <span class="suggestion-text">{{ suggestion.text }}</span>
-              @if (index === 0) { <span class="suggestion-hint">Tab</span> }
+              @if (index === 0) {
+                <span class="suggestion-hint">Tab</span>
+              }
             </button>
           }
         </div>
@@ -124,9 +133,6 @@ export class MarkdownEditorComponent {
   toggleLanguage(): void {
     const newLang = this.language() === 'telugu' ? 'english' : 'telugu';
     this.language.set(newLang);
-    if (newLang === 'telugu') {
-      this.convertAll();
-    }
     this.clearSuggestions();
   }
 
@@ -153,9 +159,11 @@ export class MarkdownEditorComponent {
     if (!candidates.length) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
-      this.selectedSuggestionIndex.update((index) => event.key === 'ArrowDown'
-        ? Math.min(index + 1, candidates.length - 1)
-        : Math.max(index - 1, 0));
+      this.selectedSuggestionIndex.update((index) =>
+        event.key === 'ArrowDown'
+          ? Math.min(index + 1, candidates.length - 1)
+          : Math.max(index - 1, 0),
+      );
       return;
     }
     if (event.key === 'Tab') {
@@ -227,12 +235,16 @@ export class MarkdownEditorComponent {
       this.clearSuggestions();
       return;
     }
-    this.suggestions.set(this.engine.suggest({
-      before: value.slice(0, active.start),
-      current: active.roman,
-      after: value.slice(active.end),
-      languageMode: 'mixed',
-    }).slice(0, 6));
+    this.suggestions.set(
+      this.engine
+        .suggest({
+          before: value.slice(0, active.start),
+          current: active.roman,
+          after: value.slice(active.end),
+          languageMode: 'mixed',
+        })
+        .slice(0, 6),
+    );
     this.composition = active;
     this.selectedSuggestionIndex.set(0);
   }
@@ -254,20 +266,29 @@ export class MarkdownEditorComponent {
 
   private restoreUserVocabulary(): void {
     try {
-      const entries: Array<[string, string]> = JSON.parse(localStorage.getItem('telugu-editor-user-vocabulary') ?? '[]');
+      const entries: Array<[string, string]> = JSON.parse(
+        localStorage.getItem('telugu-editor-user-vocabulary') ?? '[]',
+      );
       for (const [roman, telugu] of entries) {
         if (typeof roman === 'string' && typeof telugu === 'string') {
           this.userWords.set(roman, telugu);
           this.engine.remember(roman, telugu);
         }
       }
-    } catch { /* Invalid browser storage should not interrupt typing. */ }
+    } catch {
+      /* Invalid browser storage should not interrupt typing. */
+    }
   }
 
   private persistUserWord(roman: string, telugu: string): void {
     this.userWords.set(roman.toLowerCase(), telugu);
     try {
-      localStorage.setItem('telugu-editor-user-vocabulary', JSON.stringify([...this.userWords.entries()].slice(-500)));
-    } catch { /* Storage can be unavailable or full; in-memory learning still works. */ }
+      localStorage.setItem(
+        'telugu-editor-user-vocabulary',
+        JSON.stringify([...this.userWords.entries()].slice(-500)),
+      );
+    } catch {
+      /* Storage can be unavailable or full; in-memory learning still works. */
+    }
   }
 }

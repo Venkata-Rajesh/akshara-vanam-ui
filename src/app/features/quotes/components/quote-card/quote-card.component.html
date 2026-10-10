@@ -7,6 +7,29 @@
 >
   <div class="card-glow"></div>
 
+  @if (reactionBurst(); as reaction) {
+    <span class="reaction-burst" [class.dislike]="reaction === 'dislike'" aria-hidden="true">
+      <svg viewBox="0 0 64 64" focusable="false">
+        <path
+          class="heart-shape"
+          fill="#e11d48"
+          d="M32 56S6.5 40.4 6.5 23.5C6.5 14.9 12.2 9 20 9c5.2 0 9.3 2.9 12 7.4C34.7 11.9 38.8 9 44 9c7.8 0 13.5 5.9 13.5 14.5C57.5 40.4 32 56 32 56Z"
+        ></path>
+        @if (reaction === 'dislike') {
+          <path
+            class="heart-crack"
+            d="m35 11-7 14 9 5-10 12 7 5-4 8"
+            fill="none"
+            stroke="var(--bg-card)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="4"
+          ></path>
+        }
+      </svg>
+    </span>
+  }
+
   <!-- Ambient Watermark -->
   <span class="watermark-mark" aria-hidden="true">“</span>
 
@@ -99,26 +122,76 @@
     <button
       type="button"
       [class.active]="quote().userReaction === 'like'"
+      [class.like]="quote().userReaction === 'like'"
       [attr.aria-pressed]="quote().userReaction === 'like'"
       [title]="isAuthenticated() ? 'Like quote' : 'Sign in to react'"
       (click)="onReactionClick($event, 'like')"
     >
-      <span aria-hidden="true">♥</span> {{ quote().likesCount || 0 }}
+      <span class="like-heart-icon" aria-hidden="true">♥</span>
+      {{ quote().likesCount || 0 }}
     </button>
     <button
       type="button"
       [class.active]="quote().userReaction === 'dislike'"
+      [class.dislike]="quote().userReaction === 'dislike'"
       [attr.aria-pressed]="quote().userReaction === 'dislike'"
       [title]="isAuthenticated() ? 'Dislike quote' : 'Sign in to react'"
       (click)="onReactionClick($event, 'dislike')"
     >
-      <span aria-hidden="true">−</span> {{ quote().dislikesCount || 0 }}
+      <svg
+        class="broken-heart-icon"
+        width="17"
+        height="17"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.5L12 21.35Z"
+        ></path>
+        <path
+          d="m13.2 3.3-2.7 5.9 3 2.1-3 4.2 2.1 1.6L11 21"
+          fill="none"
+          stroke="var(--bg-card)"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        ></path>
+      </svg>
+      {{ quote().dislikesCount || 0 }}
     </button>
+    @if (isHiddenQuote()) {
+      <button
+        type="button"
+        class="restore-quote-btn"
+        (click)="onRestoreClick($event)"
+        aria-label="Restore quote to collection"
+        title="Restore quote to collection"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M3 11a9 9 0 0 1 15.4-6.4L21 7"></path>
+          <path d="M21 3v4h-4"></path>
+          <path d="M21 13a9 9 0 0 1-15.4 6.4L3 17"></path>
+          <path d="M3 21v-4h4"></path>
+        </svg>
+        <span>Restore</span>
+      </button>
+    }
   </div>
 
   <div class="card-footer">
     <div class="author-info">
-      <div class="author-avatar">{{ quote().author.charAt(0) }}</div>
+      <div class="author-avatar" [style.background-color]="avatarColor(quote().author)">
+        {{ authorInitial(quote().author) }}
+      </div>
       <div class="author-meta">
         <span class="author-name">{{ quote().author }}</span>
         @if (quote().dateAdded) {

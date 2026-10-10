@@ -17,7 +17,7 @@
       <button
         type="button"
         class="theme-toggle-btn"
-        (click)="toggleTheme()"
+        (click)="toggleTheme($event)"
         [title]="isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
         [attr.aria-label]="isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
       >
@@ -30,6 +30,8 @@
             stroke="currentColor"
             stroke-width="2"
             class="theme-icon sun"
+            animate.enter="theme-icon-enter"
+            animate.leave="theme-icon-leave"
           >
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -50,6 +52,8 @@
             stroke="currentColor"
             stroke-width="2"
             class="theme-icon moon"
+            animate.enter="theme-icon-enter"
+            animate.leave="theme-icon-leave"
           >
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
@@ -64,7 +68,9 @@
 
       @if (currentUser()) {
         <div class="user-pill">
-          <span class="user-avatar">{{ currentUser()!.username.charAt(0).toUpperCase() }}</span>
+          <span class="user-avatar" [style.background-color]="avatarColor(currentUser()!.username)">
+            {{ currentUser()!.username.charAt(0).toUpperCase() }}
+          </span>
           <span class="user-name">{{ currentUser()!.username || currentUser()!.email }}</span>
         </div>
 
@@ -107,7 +113,7 @@
           </button>
         </div>
       </div>
-      <figure class="hero-verse" aria-label="Featured Telugu poetry">
+      <div class="hero-verse" role="group" aria-label="Featured Telugu poetry">
         <div class="verse-topline">
           <span class="verse-mark" aria-hidden="true">॥</span>
           <span class="voice-index"
@@ -115,11 +121,15 @@
             {{ featuredVoices.length | number: '2.0' }}</span
           >
         </div>
-        <blockquote>{{ activeVoice().quote }}</blockquote>
-        <figcaption>
-          <strong>{{ activeVoice().poet }}</strong>
-          <span>{{ activeVoice().note }}</span>
-        </figcaption>
+        @for (voice of [activeVoice()]; track activeVoiceIndex()) {
+          <figure class="voice-slide" aria-live="polite">
+            <blockquote>{{ voice.quote }}</blockquote>
+            <figcaption>
+              <strong>{{ voice.poet }}</strong>
+              <span>{{ voice.note }}</span>
+            </figcaption>
+          </figure>
+        }
         <div class="verse-footer">
           <div class="verse-controls" aria-label="Featured quote controls">
             <button
@@ -143,6 +153,37 @@
             <button
               type="button"
               class="verse-control"
+              (click)="toggleVoiceRotation()"
+              [attr.aria-label]="
+                isVoiceRotationPaused() ? 'Resume quote rotation' : 'Pause quote rotation'
+              "
+              [attr.aria-pressed]="isVoiceRotationPaused()"
+            >
+              @if (isVoiceRotationPaused()) {
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M3 1.5v9l7-4.5z"></path>
+                </svg>
+              } @else {
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M2 1.5h3v9H2zm5 0h3v9H7z"></path>
+                </svg>
+              }
+            </button>
+            <button
+              type="button"
+              class="verse-control"
               (click)="showNextVoice()"
               aria-label="Next quote"
             >
@@ -150,7 +191,7 @@
             </button>
           </div>
         </div>
-      </figure>
+      </div>
     </section>
 
     @if (isAdmin() && isReviewQueueOpen()) {
@@ -262,6 +303,32 @@
           </button>
         </div>
 
+        @if (isAuthenticated() && (dislikedQuoteCount() > 0 || showDislikedQuotes())) {
+          <button
+            type="button"
+            class="hidden-quotes-toggle"
+            [class.active]="showDislikedQuotes()"
+            [attr.aria-pressed]="showDislikedQuotes()"
+            (click)="toggleDislikedQuotes()"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M12 3 2.8 19h18.4L12 3Z"></path>
+              <path d="m12 9 .01 4"></path>
+              <path d="M12 16h.01"></path>
+            </svg>
+            <span>Hidden</span>
+            <span class="hidden-quotes-count">{{ dislikedQuoteCount() }}</span>
+          </button>
+        }
+
         <div class="search-box">
           <svg
             class="search-icon"
@@ -370,15 +437,17 @@
       </div>
     } @else if (filteredQuotes().length === 0) {
       <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <h3>No quotes match your search</h3>
-        <p>Try searching for a different keyword or reset active tag filters.</p>
-        <button
-          type="button"
-          class="reset-btn"
-          (click)="searchQuery.set(''); selectedTag.set(null)"
-        >
-          Reset Filters
+        <div class="empty-icon">{{ showDislikedQuotes() ? '♡' : '🔍' }}</div>
+        <h3>{{ showDislikedQuotes() ? 'No hidden quotes' : 'No quotes match your search' }}</h3>
+        <p>
+          {{
+            showDislikedQuotes()
+              ? 'Quotes you dislike will appear here, where you can restore them.'
+              : 'Try searching for a different keyword or reset active tag filters.'
+          }}
+        </p>
+        <button type="button" class="reset-btn" (click)="resetQuoteFilters()">
+          {{ showDislikedQuotes() ? 'Back to collection' : 'Reset Filters' }}
         </button>
       </div>
     } @else {
@@ -393,6 +462,7 @@
             [quote]="quote"
             [isAuthenticated]="isAuthenticated()"
             [showManagementActions]="canManageQuote(quote)"
+            [isHiddenQuote]="showDislikedQuotes() && quote.userReaction === 'dislike'"
             (selectQuote)="openQuoteModal($event)"
             (copyQuote)="copyQuote($event)"
             (editQuote)="openEditQuote($event)"

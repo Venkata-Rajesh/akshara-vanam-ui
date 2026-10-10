@@ -36,6 +36,12 @@
   align-items: center;
   gap: 3px;
 }
+.convert-language-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
 
 .toolbar-btn {
   background: transparent;
@@ -193,6 +199,25 @@
 
 .lang-label.active {
   color: var(--text-on-brand);
+}
+
+@media (max-width: 480px) {
+  .md-toolbar {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .md-toolbar > .toolbar-group:first-child {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+
+  .convert-language-group .lang-toggle-pill {
+    width: clamp(126px, calc(100vw - 152px), 168px);
+    flex: 0 0 auto;
+  }
 }
 
 @keyframes suggestionPanelIn {
