@@ -66,6 +66,26 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
       poet: 'శ్రీశ్రీ',
       note: 'ప్రగతి కవిత్వం',
     },
+    {
+      quote: 'పొలాల మీద గాలి రాల్చినట్టు,\nమనసు నిన్ను మళ్లీ మళ్లీ తాకింది.',
+      poet: 'సి. నారాయణ రెడ్డి',
+      note: 'రొమాంటిక్ పల్లె',
+    },
+    {
+      quote: 'చిన్ననాటి గడపలోనిది,\nగుండెకు అల్లిన నీ బాసురం.',
+      poet: 'దాశరథి కృష్ణమాచార్య',
+      note: 'రural మాధుర్యం',
+    },
+    {
+      quote: 'రాతి వయసు మేం తట్టుకున్నాం,\nకనులు చూసినప్పుడల్లా ప్రేమ నెత్తిన తడి.',
+      poet: 'వడ్డాది ప్రతాపరెడ్డి',
+      note: 'ఇంటిమాటల ప్రేమ',
+    },
+    {
+      quote: 'మామిడి చెట్ల కింద నీ నవ్వు,\nమళ్లీ మళ్లీ నా పల్లె గాలిని కదిలించింది.',
+      poet: 'అనంతయ్య',
+      note: 'ప్రేమ సమర్పణ',
+    },
   ] as const;
   readonly activeVoiceIndex = signal(0);
   readonly activeVoice = computed(() => this.featuredVoices[this.activeVoiceIndex()]);
@@ -80,6 +100,7 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
   readonly selectedTag = signal<string | null>(null);
   readonly selectedPoetryLanguage = signal<PoetryLanguage | 'all'>('all');
   readonly showDislikedQuotes = signal(false);
+  readonly showLikedQuotes = signal(false);
   readonly selectedQuote = signal<Quote | null>(null);
   readonly editorQuote = signal<Quote | null>(null);
   readonly isEditorOpen = signal(false);
@@ -220,14 +241,38 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
     const showDisliked = !this.showDislikedQuotes();
     this.showDislikedQuotes.set(showDisliked);
     if (showDisliked) {
+      this.showLikedQuotes.set(false);
       this.selectedTag.set(null);
       this.selectedPoetryLanguage.set('all');
+    }
+  }
+
+  toggleLikedQuotes(): void {
+    if (!this.isAuthenticated()) {
+      this.openSignIn();
+      return;
+    }
+
+    const shouldShowLiked = !this.showLikedQuotes();
+    this.showLikedQuotes.set(shouldShowLiked);
+    this.showDislikedQuotes.set(false);
+    this.selectedTag.set(null);
+    this.selectedPoetryLanguage.set('all');
+    if (shouldShowLiked) {
+      this.loadLikedQuotes();
+    } else {
+      this.loadQuotes();
     }
   }
 
   resetQuoteFilters(): void {
     if (this.showDislikedQuotes()) {
       this.showDislikedQuotes.set(false);
+      return;
+    }
+    if (this.showLikedQuotes()) {
+      this.showLikedQuotes.set(false);
+      this.loadQuotes();
       return;
     }
     this.searchQuery.set('');
@@ -322,6 +367,9 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
           if (isLastHiddenQuote && this.showDislikedQuotes()) this.showDislikedQuotes.set(false);
           this.toast.success('Quote restored to your collection.');
         }
+        if (this.showLikedQuotes() && reaction !== 'like') {
+          this.quotes.update((quotes) => quotes.filter((quote) => quote._id !== quoteId));
+        }
       },
       error: (error) => this.toast.error(error.message || 'Unable to update reaction.'),
     });
@@ -383,6 +431,21 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
     this.apiService.getPendingQuotes().subscribe({
       next: (quotes) => this.pendingQuotes.set(quotes),
       error: (error) => this.toast.error(error.message || 'Unable to load review queue.'),
+    });
+  }
+
+  private loadLikedQuotes(): void {
+    this.isLoading.set(true);
+    this.apiService.getLikedQuotes().subscribe({
+      next: (quotes) => {
+        this.quotes.set(quotes);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        this.showLikedQuotes.set(false);
+        this.isLoading.set(false);
+        this.toast.error(error.message || 'Unable to load liked quotes.');
+      },
     });
   }
 

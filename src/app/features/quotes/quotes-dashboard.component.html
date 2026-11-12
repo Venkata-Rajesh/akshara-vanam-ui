@@ -303,6 +303,19 @@
           </button>
         </div>
 
+        @if (isAuthenticated()) {
+          <button
+            type="button"
+            class="liked-quotes-toggle"
+            [class.active]="showLikedQuotes()"
+            [attr.aria-pressed]="showLikedQuotes()"
+            (click)="toggleLikedQuotes()"
+          >
+            <span aria-hidden="true">♥</span>
+            <span>{{ isAdmin() ? 'All liked' : 'Liked' }}</span>
+          </button>
+        }
+
         @if (isAuthenticated() && (dislikedQuoteCount() > 0 || showDislikedQuotes())) {
           <button
             type="button"
@@ -448,12 +461,14 @@
       </div>
     } @else if (filteredQuotes().length === 0) {
       <div class="empty-state">
-        <div class="empty-icon">{{ showDislikedQuotes() ? '♡' : '🔍' }}</div>
-        <h3>{{ showDislikedQuotes() ? 'No hidden quotes' : 'No quotes match your search' }}</h3>
+        <div class="empty-icon">{{ showDislikedQuotes() ? '♡' : showLikedQuotes() ? '♥' : '🔍' }}</div>
+        <h3>{{ showDislikedQuotes() ? 'No hidden quotes' : showLikedQuotes() ? 'No liked quotes yet' : 'No quotes match your search' }}</h3>
         <p>
           {{
             showDislikedQuotes()
               ? 'Quotes you dislike will appear here, where you can restore them.'
+              : showLikedQuotes()
+                ? 'Quotes you like will appear here.'
               : 'Try searching for a different keyword or reset active tag filters.'
           }}
         </p>

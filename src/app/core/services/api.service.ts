@@ -68,6 +68,21 @@ export class ApiService {
       );
   }
 
+  getLikedQuotes(query: QuoteQuery = {}): Observable<Quote[]> {
+    let params = new HttpParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') params = params.set(key, String(value));
+    });
+
+    return this.http
+      .get<ApiResponse<Quote[]>>(`${this.apiUrl}/liked`, { params })
+      .pipe(
+        map((res) =>
+          Array.isArray(res.data) ? res.data.map((quote) => this.normalizeQuote(quote)) : [],
+        ),
+      );
+  }
+
   getQuote(id: string): Observable<Quote> {
     return this.http
       .get<ApiResponse<Quote>>(`${this.apiUrl}/${encodeURIComponent(id)}`)

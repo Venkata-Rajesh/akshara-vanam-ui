@@ -678,6 +678,25 @@
     sans-serif;
   cursor: pointer;
 }
+.liked-quotes-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  color: var(--maroon-700);
+  background: var(--bg-surface);
+  font: 700 11px/1 'Noto Sans Telugu', sans-serif;
+  cursor: pointer;
+}
+.liked-quotes-toggle.active {
+  border-color: var(--maroon-700);
+  color: #fff9ed;
+  background: var(--maroon-700);
+}
 .hidden-quotes-toggle.active {
   border-color: #9f1239;
   color: #fff8f8;
