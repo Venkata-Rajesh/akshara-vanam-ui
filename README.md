@@ -63,3 +63,11 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Deploying to Netlify
+
+This project builds the Angular UI as a Netlify static site. Import the `test-auth` repository into Netlify; the checked-in `netlify.toml` configures the production build, publish directory, and Angular route fallback.
+
+Set the Netlify build environment variable `API_BASE_URL` to the deployed API site's HTTPS URL ending in `/api/v1`, for example `https://your-api.netlify.app/api/v1`. The build fails if this variable is missing or is not an HTTPS API URL. After deploying the UI, add its exact origin to the API site's `CORS_ORIGIN` setting.
+
+The API URL is public client configuration, not a secret. Do not put database credentials, JWT secrets, or other private values in this UI site's environment.
