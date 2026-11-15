@@ -93,11 +93,11 @@
 }
 
 .sun-icon {
-  color: #f59e0b;
+  color: var(--md-sys-color-tertiary);
 }
 
 .moon-icon {
-  color: var(--maroon-600);
+  color: var(--md-sys-color-primary);
 }
 
 .auth-wrapper {
@@ -264,7 +264,7 @@ input:focus + .input-icon,
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #ef4444;
+  color: var(--md-sys-color-error);
   margin-top: 6px;
   padding-left: 6px;
   font-weight: 600;
@@ -341,7 +341,7 @@ input:focus + .input-icon,
   border: none;
   background: var(--gradient-primary);
   background-size: 200% 200%;
-  color: #ffffff;
+  color: var(--md-sys-color-on-primary);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -442,7 +442,7 @@ input:focus + .input-icon,
   background: var(--gradient-primary);
   background-size: 200% 200%;
   animation: gradientShift 16s ease-in-out infinite alternate;
-  color: #ffffff;
+  color: var(--md-sys-color-on-primary);
   position: relative;
   left: -100%;
   height: 100%;
@@ -477,8 +477,8 @@ input:focus + .input-icon,
 }
 
 .overlay-panel h1 {
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
+  color: var(--md-sys-color-on-primary);
+  -webkit-text-fill-color: var(--md-sys-color-on-primary);
   font-size: 32px;
   font-weight: 800;
   letter-spacing: -0.5px;
@@ -489,7 +489,7 @@ input:focus + .input-icon,
   font-weight: 400;
   line-height: 1.6;
   margin: 14px 0 28px 0;
-  color: rgba(255, 255, 255, 0.95);
+  color: color-mix(in srgb, var(--md-sys-color-on-primary) 88%, var(--md-sys-color-primary));
 }
 
 button.ghost {
@@ -497,7 +497,7 @@ button.ghost {
   border: 1.5px solid rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
   border-radius: var(--radius-md);
-  color: #ffffff;
+  color: var(--md-sys-color-on-primary);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -508,7 +508,7 @@ button.ghost {
 
 button.ghost:hover {
   background-color: #ffffff;
-  color: #4338ca;
+  color: var(--md-sys-color-primary);
   border-color: #ffffff;
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);

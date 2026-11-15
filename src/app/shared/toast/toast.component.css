@@ -17,8 +17,8 @@
   align-items: center;
   gap: 12px;
   padding: 13px 15px;
-  border-radius: var(--radius-md);
-  color: #ffffff;
+  border-radius: var(--md-sys-shape-corner-medium);
+  color: var(--md-sys-color-inverse-on-surface);
   font-family:
     'Plus Jakarta Sans',
     -apple-system,
@@ -26,9 +26,12 @@
     sans-serif;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid color-mix(
+    in srgb,
+    var(--md-sys-color-inverse-on-surface) 12%,
+    transparent
+  );
+  box-shadow: var(--md-sys-elevation-level3);
   animation: toastSpringIn var(--duration-standard) var(--ease-motion) forwards;
   transition:
     transform var(--duration-standard) var(--ease-smooth),
@@ -45,14 +48,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 12%, transparent);
   font-size: 14px;
   font-weight: 800;
   flex-shrink: 0;
-  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.2);
 }
 
 .toast-content {
@@ -66,14 +68,14 @@
 }
 
 .toast-close {
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 8%, transparent);
   border: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--md-sys-color-inverse-on-surface);
   font-size: 20px;
   line-height: 1;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -83,40 +85,50 @@
 }
 
 .toast-close:hover {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 16%, transparent);
+  color: var(--md-sys-color-inverse-on-surface);
   transform: scale(1.15);
 }
 
-/* Color themes with vibrant gradients */
-.toast-success {
-  background: linear-gradient(135deg, var(--success), #28553f);
-  border-left: 3px solid #a7d4b4;
+.toast-item.toast-success {
+  background: var(--md-sys-color-inverse-surface);
 }
 
-.toast-error {
-  background: linear-gradient(135deg, var(--danger), #71241e);
-  border-left: 3px solid #f0a79a;
+.toast-item.toast-error {
+  background: var(--md-sys-color-inverse-surface);
 }
 
-.toast-info {
-  background: linear-gradient(135deg, var(--maroon-700), var(--maroon-600));
-  border-left: 3px solid var(--gold-600);
+.toast-item.toast-info {
+  background: var(--md-sys-color-inverse-surface);
 }
 
-.toast-warning {
-  background: linear-gradient(135deg, var(--gold-700), #6e4310);
-  border-left: 3px solid #f3d28b;
+.toast-item.toast-warning {
+  background: var(--md-sys-color-inverse-surface);
+}
+
+.toast-success .toast-icon {
+  color: var(--md-sys-color-inverse-on-surface);
+  background: var(--md-sys-color-success);
+}
+
+.toast-error .toast-icon {
+  color: var(--md-sys-color-on-error);
+  background: var(--md-sys-color-error);
+}
+
+.toast-warning .toast-icon {
+  color: var(--md-sys-color-on-tertiary);
+  background: var(--md-sys-color-tertiary);
 }
 
 @keyframes toastSpringIn {
   0% {
     opacity: 0;
-    transform: translateX(110%) scale(0.85);
+    transform: translateY(8px);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateY(0);
   }
 }
 

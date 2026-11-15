@@ -39,11 +39,11 @@ import { Component, input, output } from '@angular/core';
     .visibility-toggle {
       display: grid;
       place-items: center;
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       padding: 0;
       border: 0;
-      border-radius: 6px;
+      border-radius: var(--md-sys-shape-corner-full);
       background: transparent;
       color: var(--text-muted);
       cursor: pointer;
