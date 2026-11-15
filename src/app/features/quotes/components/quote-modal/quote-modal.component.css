@@ -7,8 +7,8 @@
   justify-content: center;
   padding: 24px;
   background: var(--bg-modal-backdrop);
-  backdrop-filter: blur(10px) saturate(110%);
-  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .modal-card {
@@ -18,19 +18,8 @@
   overflow-y: auto;
   padding: 30px 30px 22px;
   border: 1px solid var(--hero-border);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   background-color: var(--bg-modal);
-  background-image:
-    radial-gradient(
-      ellipse at top right,
-      color-mix(in srgb, var(--gold-wash) 55%, transparent),
-      transparent 48%
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 8px,
-      color-mix(in srgb, var(--text-primary) 1%, transparent) 9px
-    );
   color: var(--text-primary);
   box-shadow: var(--shadow-lg);
   overscroll-behavior: contain;
@@ -42,42 +31,13 @@
 .modal-card.editor-card {
   width: min(100%, 820px);
   padding: 34px 36px 24px;
-  background-image:
-    radial-gradient(
-      ellipse at top right,
-      color-mix(in srgb, var(--gold-wash) 55%, transparent),
-      transparent 48%
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 8px,
-      color-mix(in srgb, var(--text-primary) 1%, transparent) 9px
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg-modal) 96%, var(--gold-wash)),
-      var(--bg-modal)
-    );
-}
-
-.modal-card::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 4px;
-  border-radius: 20px 20px 0 0;
-  background: var(--gradient-primary);
-  content: '';
 }
 
 .modal-title {
   max-width: calc(100% - 48px);
   margin: 0 0 28px;
-  color: var(--ink-900);
-  font:
-    700 clamp(1.65rem, 3vw, 2.35rem)/1.15 'Noto Serif Telugu',
-    serif;
+  color: var(--text-primary);
+  font: var(--md-sys-typescale-headline-large);
 }
 .close-btn {
   position: absolute;
@@ -85,10 +45,10 @@
   right: 16px;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border: 1px solid var(--border-subtle);
-  border-radius: 9px;
+  border-radius: 999px;
   color: var(--text-muted);
   background: var(--bg-surface-glass);
   font-size: 22px;
@@ -97,14 +57,8 @@
 }
 .close-btn:hover {
   border-color: var(--border-accent);
-  color: var(--maroon-600);
-  background: var(--gold-wash);
-  transform: rotate(45deg);
-  transition:
-    transform 220ms cubic-bezier(0.2, 0.75, 0.25, 1),
-    color 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
+  color: var(--maroon-700);
+  background: var(--bg-suggestion-active);
 }
 .modal-header {
   display: flex;
@@ -116,20 +70,19 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  color: var(--text-on-brand);
-  background-color: var(--maroon-700);
-  box-shadow: var(--shadow-sm);
+  color: var(--text-on-active);
+  background-color: var(--bg-suggestion-active);
+  box-shadow: none;
   font-size: 21px;
   font-weight: 800;
 }
 .modal-author {
   margin: 0 0 2px;
   color: var(--text-primary);
-  font-size: 22px;
-  font-weight: 800;
+  font: var(--md-sys-typescale-title-large);
 }
 .modal-date {
   color: var(--text-dim);
@@ -151,9 +104,10 @@
   margin-bottom: 28px;
 }
 .tag-chip {
+  min-height: 32px;
   padding: 6px 12px;
   border: 1px solid var(--tag-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--tag-color);
   background: var(--tag-bg);
   font-size: 12px;
@@ -188,15 +142,13 @@
   gap: 9px;
 }
 .hidden-comments-toggle {
-  min-height: 30px;
-  padding: 5px 10px;
-  border: 1px solid var(--border-accent);
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  color: var(--maroon-700);
-  background: var(--gold-wash);
-  font:
-    700 11px/1 'Noto Sans Telugu',
-    sans-serif;
+  color: var(--text-secondary);
+  background: transparent;
+  font: var(--md-sys-typescale-label-large);
   cursor: pointer;
   transition:
     color 0.18s ease,
@@ -205,13 +157,13 @@
 }
 .hidden-comments-toggle:hover,
 .hidden-comments-toggle.active {
-  border-color: var(--maroon-700);
-  color: var(--text-on-brand);
-  background: var(--maroon-700);
+  border-color: var(--primary-500);
+  color: var(--text-on-active);
+  background: var(--bg-suggestion-active);
 }
 .hidden-comments-toggle:focus-visible,
 .comment-language-selector button:focus-visible {
-  outline: 3px solid var(--focus-ring);
+  outline: 3px solid var(--primary-500);
   outline-offset: 2px;
 }
 .comments-heading h3 {
@@ -236,34 +188,32 @@
   width: fit-content;
   padding: 3px;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--bg-surface-glass);
+  border-radius: 999px;
+  background: var(--bg-surface-elevated);
 }
 .comment-language-selector button {
-  min-height: 28px;
+  min-height: 36px;
   padding: 5px 10px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   color: var(--text-secondary);
   background: transparent;
-  font:
-    700 11px/1 'Noto Sans Telugu',
-    sans-serif;
+  font: 700 11px/1 var(--font-body);
   cursor: pointer;
 }
 .comment-language-selector button.active {
   color: var(--text-on-brand);
   background: var(--maroon-700);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 .comment-form textarea,
 .comment-item textarea {
   box-sizing: border-box;
   width: 100%;
-  min-height: 72px;
-  padding: 10px 12px;
+  min-height: 88px;
+  padding: 12px;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: 4px;
   color: var(--text-primary);
   background: var(--bg-input);
   font: inherit;
@@ -283,10 +233,10 @@
   max-height: 180px;
   overflow-y: auto;
   padding: 5px;
-  border: 1px solid var(--border-glow);
-  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   background: var(--bg-surface-elevated);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
 }
 .comment-suggestion {
   display: flex;
@@ -296,7 +246,7 @@
   min-height: 34px;
   padding: 7px 9px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   background: transparent;
   font: inherit;
@@ -315,9 +265,6 @@
   background: var(--bg-tab-pill);
   font-size: 10px;
 }
-.comment-form > button {
-  justify-self: end;
-}
 .comment-form button,
 .comment-actions button,
 .comment-item > button,
@@ -330,8 +277,20 @@
   font-weight: 700;
   cursor: pointer;
 }
-.comment-form button:disabled {
-  opacity: 0.5;
+.comment-form > button {
+  justify-self: end;
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  padding-inline: 20px;
+  color: var(--text-on-brand);
+  background: var(--maroon-700);
+  font: var(--md-sys-typescale-label-large);
+}
+.comment-form > button:disabled {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  opacity: 0.38;
   cursor: not-allowed;
 }
 .comment-list {
@@ -349,7 +308,7 @@
 .comment-language-badge {
   margin-right: auto;
   padding: 3px 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--tag-color);
   background: var(--tag-bg);
   font-size: 10px;
@@ -363,6 +322,7 @@
 }
 .comment-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 .comment-edit-form {
@@ -376,10 +336,10 @@
   gap: 10px;
 }
 .comment-edit-actions button {
-  min-height: 34px;
+  min-height: 40px;
   padding: 6px 10px;
   border: 1px solid var(--border-subtle);
-  border-radius: 7px;
+  border-radius: 999px;
   color: var(--maroon-700);
   background: var(--bg-surface-glass);
   font: inherit;
@@ -388,9 +348,9 @@
   cursor: pointer;
 }
 .comment-edit-actions button[type='submit'] {
-  border-color: var(--maroon-700);
+  border-color: var(--primary-500);
   color: var(--text-on-brand);
-  background: var(--maroon-700);
+  background: var(--primary-500);
 }
 .comment-edit-actions button:disabled {
   opacity: 0.55;
@@ -428,24 +388,19 @@
 }
 .form-group label {
   color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font: var(--md-sys-typescale-label-large);
 }
 .form-control {
   width: 100%;
   box-sizing: border-box;
-  min-height: 46px;
+  min-height: 56px;
   padding: 12px 14px;
   border: 1px solid var(--border-subtle);
-  border-radius: 11px;
+  border-radius: 4px;
   color: var(--text-primary);
   background: var(--bg-input);
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
-  font:
-    400 14px/1.45 'Noto Sans Telugu',
-    sans-serif;
+  box-shadow: none;
+  font: 400 14px/1.45 var(--font-body);
 }
 .form-control::placeholder {
   color: var(--text-dim);
@@ -464,10 +419,10 @@
   max-height: 180px;
   overflow-y: auto;
   padding: 5px;
-  border: 1px solid var(--border-glow);
-  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   background: var(--bg-surface-elevated);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   animation: metadataSuggestionPanelIn var(--duration-fast) var(--ease-motion);
 }
 .metadata-suggestion {
@@ -478,7 +433,7 @@
   min-height: 36px;
   padding: 7px 9px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   background: transparent;
   font: inherit;
@@ -509,33 +464,30 @@
 }
 .form-control:focus {
   outline: none;
-  border-color: var(--primary-400);
+  border-color: var(--primary-500);
   background: var(--bg-input-focus);
-  box-shadow: 0 0 0 4px var(--focus-ring);
+  box-shadow: var(--md-sys-focus-ring);
 }
 textarea.form-control {
   min-height: 132px;
   resize: vertical;
 }
 .editor-textarea {
-  font:
-    400 1rem/1.7 'Noto Sans Telugu',
-    serif;
+  font: 400 1rem/1.7 var(--font-body);
 }
 .toggle-translit-btn {
   padding: 6px 11px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   color: var(--text-secondary);
-  background: var(--bg-surface-glass);
-  font-size: 11px;
-  font-weight: 700;
+  background: transparent;
+  font: var(--md-sys-typescale-label-large);
   cursor: pointer;
 }
 .toggle-translit-btn.active {
-  border-color: transparent;
-  color: var(--text-on-brand);
-  background: var(--gradient-primary);
+  border-color: var(--gold-700);
+  color: var(--text-on-active);
+  background: var(--bg-tab-pill);
 }
 .modal-actions {
   display: flex;
@@ -551,23 +503,20 @@ textarea.form-control {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
-  padding: 11px 20px;
-  border-radius: 10px;
-  font:
-    700 13px/1 'Noto Sans Telugu',
-    sans-serif;
+  min-height: 40px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font: var(--md-sys-typescale-label-large);
   cursor: pointer;
 }
 .action-btn.primary {
   border: 0;
   color: var(--text-on-brand);
-  background: var(--gradient-primary);
-  box-shadow: var(--shadow-sm);
+  background: var(--primary-500);
+  box-shadow: none;
 }
 .action-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 .action-btn.secondary,
 .action-btn.copy,
@@ -580,8 +529,8 @@ textarea.form-control {
 .action-btn.copy:hover,
 .action-btn.close:hover {
   border-color: var(--border-accent);
-  color: var(--maroon-600);
-  background: var(--gold-wash);
+  color: var(--maroon-700);
+  background: var(--bg-suggestion-active);
 }
 
 @keyframes modalBackdropEnter {

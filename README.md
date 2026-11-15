@@ -18,6 +18,15 @@ Form validation and field state use Angular Signal Forms. Authentication, passwo
 and comment forms bind directly to signal-backed models; the dashboard search and Markdown editor
 use signal-backed input controls.
 
+## Theme and design tokens
+
+The UI uses custom Angular controls styled with the Material 3 baseline palette; Angular Material is
+not installed. Semantic light/dark color roles, surface containers, typography, shape, elevation,
+spacing, state, focus, and motion tokens live in `src/styles.css`. Existing component color aliases
+map to those roles so the dashboard, dialogs, auth flows, editor, notifications, and not-found route
+stay in sync. Plus Jakarta Sans is the English UI face, with Noto Sans Telugu and Noto Serif Telugu
+retained for Telugu text and poetry. The theme toggle continues to persist `theme-preference`.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

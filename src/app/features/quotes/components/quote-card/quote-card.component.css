@@ -7,21 +7,9 @@
 .quote-card {
   position: relative;
   isolation: isolate;
-  background: var(--bg-card);
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 7px,
-      color-mix(in srgb, var(--text-primary) 1.5%, transparent) 8px
-    ),
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--bg-card) 96%, white),
-      var(--bg-card) 66%,
-      color-mix(in srgb, var(--bg-card) 95%, var(--gold-wash))
-    );
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-large);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -29,11 +17,10 @@
   cursor: pointer;
   overflow: hidden;
   transition:
-    transform 280ms cubic-bezier(0.2, 0.75, 0.25, 1),
-    border-color 220ms ease,
-    box-shadow 280ms ease,
-    background-color 220ms ease;
-  box-shadow: var(--shadow-sm);
+    border-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+  box-shadow: var(--md-sys-elevation-level1);
   min-height: 220px;
   height: 100%;
   transform-origin: center center;
@@ -41,12 +28,14 @@
 
 .quote-card:hover,
 .quote-card:focus-visible {
-  transform: translate3d(0, -4px, 0);
-  border-color: var(--border-glow);
-  box-shadow:
-    0 16px 30px -18px rgba(47, 33, 27, 0.4),
-    var(--shadow-glow);
-  outline: none;
+  border-color: var(--md-sys-color-outline);
+  background: var(--md-sys-color-surface-container);
+  box-shadow: var(--md-sys-elevation-level2);
+}
+
+.quote-card:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
 }
 
 /* Luminous Glow Aura */
@@ -82,15 +71,19 @@
   width: 126px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 228, 230, 0.92), rgba(255, 228, 230, 0) 72%);
-  box-shadow: 0 0 34px rgba(225, 29, 72, 0.16);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--md-sys-color-tertiary-container) 92%, transparent),
+    transparent 72%
+  );
+  box-shadow: 0 0 34px color-mix(in srgb, var(--md-sys-color-tertiary) 16%, transparent);
   content: '';
 }
 .reaction-burst svg {
   width: 74px;
   height: 74px;
   overflow: visible;
-  filter: drop-shadow(0 7px 12px rgba(142, 49, 35, 0.3));
+  filter: drop-shadow(0 7px 12px color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent));
 }
 .heart-shape {
   stroke: rgba(255, 255, 255, 0.88);
@@ -170,8 +163,8 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  min-width: 34px;
-  min-height: 34px;
+  min-width: 40px;
+  min-height: 40px;
   padding: 8px;
   cursor: pointer;
   display: flex;
@@ -196,15 +189,15 @@
 }
 
 .action-icon-btn.danger:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border-color: #ef4444;
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-color: var(--md-sys-color-error);
 }
 
 .copy-btn.copied {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.4);
+  background: var(--md-sys-color-success);
+  color: var(--md-sys-color-on-success);
+  border-color: var(--md-sys-color-success);
   animation: copyPop 0.35s var(--ease-spring);
 }
 
@@ -244,7 +237,7 @@
   align-items: center;
   gap: 6px;
   min-width: 54px;
-  min-height: 34px;
+  min-height: 40px;
   padding: 6px 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
@@ -257,7 +250,7 @@
 .like-heart-icon,
 .broken-heart-icon {
   flex: 0 0 auto;
-  color: #e11d48;
+  color: var(--md-sys-color-tertiary);
 }
 .like-heart-icon {
   font-size: 16px;
@@ -274,20 +267,20 @@
   background: var(--gold-wash);
 }
 .reaction-actions button.active.like {
-  border-color: rgba(225, 29, 72, 0.34);
-  color: #be123c;
-  background: rgba(225, 29, 72, 0.1);
+  border-color: var(--md-sys-color-tertiary);
+  color: var(--md-sys-color-on-tertiary-container);
+  background: var(--md-sys-color-tertiary-container);
 }
 .reaction-actions button.active.dislike {
-  border-color: rgba(127, 29, 51, 0.28);
-  color: #7f1d33;
-  background: rgba(127, 29, 51, 0.08);
+  border-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error-container);
+  background: var(--md-sys-color-error-container);
 }
 .reaction-actions button.like:hover,
 .reaction-actions button.dislike:hover {
-  border-color: rgba(225, 29, 72, 0.3);
-  color: #be123c;
-  background: rgba(225, 29, 72, 0.07);
+  border-color: var(--md-sys-color-tertiary);
+  color: var(--md-sys-color-on-tertiary-container);
+  background: var(--md-sys-color-tertiary-container);
 }
 .reaction-actions .restore-quote-btn {
   min-width: 0;
@@ -324,7 +317,7 @@
   height: 36px;
   border-radius: 50%;
   background-color: var(--maroon-700);
-  color: #ffffff;
+  color: var(--md-sys-color-on-primary);
   font-weight: 700;
   font-size: 14px;
   display: flex;
@@ -362,10 +355,10 @@
   font-size: 11px;
   font-weight: 600;
   padding: 4px 12px;
-  border-radius: 999px;
-  background: var(--tag-bg);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-secondary-container);
   color: var(--tag-color);
-  border: 1px solid var(--tag-border);
+  border: 1px solid var(--md-sys-color-outline-variant);
   transition:
     transform 0.22s var(--ease-smooth),
     background 0.22s ease,
@@ -375,11 +368,11 @@
 }
 
 .tag-badge:hover {
-  background: var(--gradient-primary);
-  color: #ffffff;
-  border-color: transparent;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: var(--md-sys-color-outline);
+  transform: none;
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
