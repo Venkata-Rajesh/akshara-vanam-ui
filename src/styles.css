@@ -267,6 +267,11 @@ select {
     opacity var(--duration-standard) var(--ease-motion);
 }
 
+button {
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media (max-width: 1030px) {
   .dashboard-wrapper .editor-tools-group {
     flex-wrap: wrap;
@@ -839,6 +844,247 @@ html[data-theme-transition]::after {
   border-radius: var(--md-sys-shape-corner-small);
 }
 
+.dashboard-wrapper .nav-user {
+  gap: 8px;
+}
+
+.dashboard-wrapper .logout-btn {
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.dashboard-wrapper .review-close {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.dashboard-wrapper .hero-verse {
+  --featured-quote-lines: 3;
+}
+
+.dashboard-wrapper .hero-verse blockquote {
+  min-block-size: calc(var(--featured-quote-lines) * 1.55em);
+}
+
+.dashboard-wrapper .hero-copy h2 .hero-title-line {
+  display: block;
+  transform-origin: left center;
+  animation: title-spread-in 1300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dashboard-wrapper .hero-copy h2 .hero-title-line:nth-child(2) {
+  animation-delay: 160ms;
+}
+
+.dashboard-wrapper .brand-icon {
+  animation: brand-mark-bloom 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dashboard-wrapper .brand-text h1 {
+  display: inline-block;
+  transform-origin: left center;
+  animation: title-spread-in 1200ms cubic-bezier(0.2, 0.8, 0.2, 1) 100ms both;
+}
+
+.dashboard-wrapper .brand-text .brand-sub {
+  animation: brand-caption-arrive 850ms cubic-bezier(0.22, 1, 0.36, 1) 260ms both;
+}
+
+@keyframes brand-mark-bloom {
+  from {
+    opacity: 0.76;
+    transform: translateY(4px) scale(0.92) rotate(-4deg);
+  }
+  62% {
+    opacity: 1;
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent);
+    transform: translateY(-1px) scale(1.025) rotate(1deg);
+  }
+  to {
+    opacity: 1;
+    box-shadow: 0 0 0 0 transparent;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@keyframes title-spread-in {
+  from {
+    opacity: 0.92;
+    text-shadow: 0 0 0.24em color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+    transform: scaleX(0.88) translateY(0.06em);
+  }
+  62% {
+    opacity: 1;
+    transform: scaleX(1.025) translateY(-0.015em);
+  }
+  to {
+    opacity: 1;
+    text-shadow: 0 0 0 transparent;
+    transform: scaleX(1) translateY(0);
+  }
+}
+
+@keyframes brand-caption-arrive {
+  from {
+    opacity: 0.82;
+    transform: translateY(0.18em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-wrapper .literary-hero .verse-footer {
+  justify-content: center;
+}
+
+.dashboard-wrapper .literary-hero .verse-controls {
+  display: grid;
+  grid-template-areas: 'previous indicators transport';
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.dashboard-wrapper .literary-hero .verse-previous {
+  grid-area: previous;
+}
+
+.dashboard-wrapper .literary-hero .voice-indicators {
+  display: flex;
+  grid-area: indicators;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  min-width: 0;
+}
+
+.dashboard-wrapper .literary-hero .verse-navigation-controls {
+  display: flex;
+  grid-area: transport;
+  align-items: center;
+  gap: 7px;
+}
+
+.dashboard-wrapper .literary-hero .voice-dot {
+  flex: 0 0 40px;
+}
+
+.dashboard-wrapper .editor-tools-group {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.dashboard-wrapper .add-quote-btn,
+.dashboard-wrapper .reset-btn {
+  justify-content: center;
+}
+
+.dashboard-wrapper .controls-bar .add-quote-btn,
+.dashboard-wrapper .hero-actions .hero-primary {
+  font: var(--md-sys-typescale-label-large);
+}
+
+.dashboard-wrapper .controls-bar .language-btn,
+.dashboard-wrapper .controls-bar .layout-btn,
+.dashboard-wrapper .controls-bar .liked-quotes-toggle,
+.dashboard-wrapper .controls-bar .hidden-quotes-toggle,
+.dashboard-wrapper .controls-bar .restore-all-quotes-btn {
+  font: var(--md-sys-typescale-label-medium);
+}
+
+.dashboard-wrapper .hero-actions .hero-primary:hover,
+.dashboard-wrapper .controls-bar .add-quote-btn:hover {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-on-primary) var(--md-sys-state-hover),
+    var(--md-sys-color-primary)
+  );
+  box-shadow: var(--md-sys-elevation-level1);
+  filter: none;
+}
+
+.dashboard-wrapper .hero-actions .hero-primary:active,
+.dashboard-wrapper .controls-bar .add-quote-btn:active {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-on-primary) var(--md-sys-state-pressed),
+    var(--md-sys-color-primary)
+  );
+  box-shadow: none;
+  filter: none;
+}
+
+.dashboard-wrapper .controls-bar .language-btn:hover:not(.active),
+.dashboard-wrapper .controls-bar .layout-btn:hover:not(.active),
+.dashboard-wrapper .controls-bar .clear-btn:hover {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) var(--md-sys-state-hover),
+    transparent
+  );
+}
+
+.dashboard-wrapper .controls-bar .search-box {
+  min-width: min(100%, 220px);
+}
+
+.dashboard-wrapper .controls-bar .clear-btn:hover {
+  color: var(--md-sys-color-on-surface);
+}
+
+.dashboard-wrapper .review-close:focus-visible,
+.dashboard-wrapper .clear-btn:focus-visible {
+  outline-offset: 2px;
+}
+
+.modal-backdrop .modal-card .comment-form > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  cursor: pointer;
+}
+
+.modal-backdrop .modal-card .comment-form > button:hover:not(:disabled),
+.modal-backdrop .modal-card .action-btn.primary:hover {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-on-primary) var(--md-sys-state-hover),
+    var(--md-sys-color-primary)
+  );
+}
+
+.modal-backdrop .modal-card .comment-form > button:active:not(:disabled),
+.modal-backdrop .modal-card .action-btn.primary:active {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-on-primary) var(--md-sys-state-pressed),
+    var(--md-sys-color-primary)
+  );
+  box-shadow: none;
+}
+
+.modal-backdrop .modal-card .toggle-translit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.modal-backdrop .modal-card .action-btn {
+  min-width: 64px;
+}
+
 .modal-backdrop {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -967,5 +1213,70 @@ html[data-theme-transition]::after {
 
   .not-found-wrapper .breaking-404 {
     font-size: clamp(3rem, 18vw, 4.5rem);
+  }
+}
+
+@media (max-width: 680px) {
+  .dashboard-wrapper .nav-user {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100% - 112px);
+  }
+
+  .dashboard-wrapper .controls-bar .add-quote-btn {
+    width: 100%;
+  }
+
+  .dashboard-wrapper .controls-bar .editor-tools-group {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .dashboard-wrapper .controls-bar .language-toggle,
+  .dashboard-wrapper .controls-bar .search-box {
+    flex: 1 1 100%;
+  }
+
+  .dashboard-wrapper .controls-bar .liked-quotes-toggle,
+  .dashboard-wrapper .controls-bar .hidden-quotes-toggle,
+  .dashboard-wrapper .controls-bar .restore-all-quotes-btn {
+    flex: 1 1 auto;
+  }
+
+  .dashboard-wrapper .controls-bar .layout-toggle {
+    width: 100%;
+  }
+
+  .dashboard-wrapper .controls-bar .layout-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 1030px) {
+  .dashboard-wrapper .hero-verse {
+    --featured-quote-lines: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-wrapper .hero-verse {
+    --featured-quote-lines: 4;
+  }
+
+  .dashboard-wrapper .literary-hero .verse-controls {
+    grid-template-areas:
+      'previous . transport'
+      'indicators indicators indicators';
+  }
+}
+
+@media (max-width: 340px) {
+  .dashboard-wrapper .hero-verse {
+    --featured-quote-lines: 5;
+  }
+
+  .dashboard-wrapper .hero-verse figcaption {
+    min-block-size: 44px;
   }
 }

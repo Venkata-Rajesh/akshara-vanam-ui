@@ -100,7 +100,10 @@
     <section class="literary-hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow">తెలుగు భాషా వైభవం</p>
-        <h2 id="hero-title">పదం నుంచి<br /><em>పద్యానికి</em></h2>
+        <h2 id="hero-title">
+          <span class="hero-title-line">పదం నుంచి</span>
+          <span class="hero-title-line"><em>పద్యానికి</em></span>
+        </h2>
         <p class="hero-description">
           మనసులో మెదిలిన భావానికి అందమైన తెలుగు అక్షరరూపం ఇవ్వండి. చదవండి, రాయండి, పంచుకోండి.
         </p>
@@ -134,61 +137,65 @@
           <div class="verse-controls" aria-label="Featured quote controls">
             <button
               type="button"
-              class="verse-control"
+              class="verse-control verse-previous"
               (click)="showPreviousVoice()"
               aria-label="Previous quote"
             >
               ←
             </button>
-            @for (voice of featuredVoices; track voice.poet; let index = $index) {
+            <div class="voice-indicators">
+              @for (voice of featuredVoices; track voice.poet; let index = $index) {
+                <button
+                  type="button"
+                  class="voice-dot"
+                  [class.active]="activeVoiceIndex() === index"
+                  (click)="selectVoice(index)"
+                  [attr.aria-label]="'Show quote by ' + voice.poet"
+                  [attr.aria-pressed]="activeVoiceIndex() === index"
+                ></button>
+              }
+            </div>
+            <div class="verse-navigation-controls">
               <button
                 type="button"
-                class="voice-dot"
-                [class.active]="activeVoiceIndex() === index"
-                (click)="selectVoice(index)"
-                [attr.aria-label]="'Show quote by ' + voice.poet"
-                [attr.aria-pressed]="activeVoiceIndex() === index"
-              ></button>
-            }
-            <button
-              type="button"
-              class="verse-control"
-              (click)="toggleVoiceRotation()"
-              [attr.aria-label]="
-                isVoiceRotationPaused() ? 'Resume quote rotation' : 'Pause quote rotation'
-              "
-              [attr.aria-pressed]="isVoiceRotationPaused()"
-            >
-              @if (isVoiceRotationPaused()) {
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M3 1.5v9l7-4.5z"></path>
-                </svg>
-              } @else {
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M2 1.5h3v9H2zm5 0h3v9H7z"></path>
-                </svg>
-              }
-            </button>
-            <button
-              type="button"
-              class="verse-control"
-              (click)="showNextVoice()"
-              aria-label="Next quote"
-            >
-              →
-            </button>
+                class="verse-control"
+                (click)="toggleVoiceRotation()"
+                [attr.aria-label]="
+                  isVoiceRotationPaused() ? 'Resume quote rotation' : 'Pause quote rotation'
+                "
+                [attr.aria-pressed]="isVoiceRotationPaused()"
+              >
+                @if (isVoiceRotationPaused()) {
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 1.5v9l7-4.5z"></path>
+                  </svg>
+                } @else {
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 1.5h3v9H2zm5 0h3v9H7z"></path>
+                  </svg>
+                }
+              </button>
+              <button
+                type="button"
+                class="verse-control"
+                (click)="showNextVoice()"
+                aria-label="Next quote"
+              >
+                →
+              </button>
+            </div>
           </div>
         </div>
       </div>
