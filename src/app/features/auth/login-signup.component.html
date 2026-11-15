@@ -88,6 +88,7 @@
             <input
               type="text"
               [formField]="signupForm.username"
+              [attr.aria-invalid]="signupForm.username().touched() && signupForm.username().invalid()"
               placeholder="Full Name / Username"
             />
           </div>
@@ -129,6 +130,7 @@
             <input
               type="email"
               [formField]="signupForm.email"
+              [attr.aria-invalid]="signupForm.email().touched() && signupForm.email().invalid()"
               placeholder="Email Address"
             />
           </div>
@@ -169,6 +171,7 @@
               class="password-input"
               [type]="signupPasswordVisible() ? 'text' : 'password'"
               [formField]="signupForm.password"
+              [attr.aria-invalid]="signupForm.password().touched() && signupForm.password().invalid()"
               placeholder="Password (12+ chars)"
               autocomplete="new-password"
             />
@@ -219,6 +222,11 @@
               class="password-input"
               [type]="signupConfirmationVisible() ? 'text' : 'password'"
               [formField]="signupForm.confirmation"
+              [attr.aria-invalid]="
+                (signupForm.confirmation().touched() && signupForm.confirmation().invalid()) ||
+                (signupData().confirmation.length > 0 &&
+                  signupData().password !== signupData().confirmation)
+              "
               placeholder="Confirm password"
               autocomplete="new-password"
             />
@@ -297,6 +305,7 @@
             <input
               type="email"
               [formField]="loginForm.email"
+              [attr.aria-invalid]="loginForm.email().touched() && loginForm.email().invalid()"
               placeholder="Email Address"
             />
           </div>
@@ -337,6 +346,7 @@
               class="password-input"
               [type]="loginPasswordVisible() ? 'text' : 'password'"
               [formField]="loginForm.password"
+              [attr.aria-invalid]="loginForm.password().touched() && loginForm.password().invalid()"
               placeholder="Password"
               autocomplete="current-password"
             />

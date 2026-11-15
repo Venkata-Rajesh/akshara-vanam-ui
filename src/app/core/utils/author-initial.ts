@@ -1,18 +1,5 @@
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-const avatarPalette = [
-  '#315c6a',
-  '#45613c',
-  '#92513a',
-  '#664b79',
-  '#3f5e7a',
-  '#88571f',
-  '#8d4055',
-  '#3c6258',
-  '#6a5337',
-  '#4c5780',
-  '#7c5034',
-  '#37647a',
-];
+const avatarHuePalette = [195, 102, 17, 271, 210, 33, 344, 163, 43, 231, 23, 198];
 
 export function authorInitial(author: string): string {
   const name = author.trim();
@@ -25,5 +12,6 @@ export function authorAvatarColor(name: string): string {
   for (const character of name.trim().normalize('NFC').toLocaleLowerCase()) {
     hash = Math.imul(hash ^ character.codePointAt(0)!, 16777619);
   }
-  return avatarPalette[(hash >>> 0) % avatarPalette.length];
+  const hue = avatarHuePalette[(hash >>> 0) % avatarHuePalette.length];
+  return `hsl(${hue} 48% var(--app-avatar-tonal-lightness))`;
 }

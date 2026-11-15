@@ -95,6 +95,9 @@
           <app-markdown-editor
             [textareaId]="'quote-content'"
             [formField]="editorForm.content"
+            [attr.aria-invalid]="
+              editorForm.content().touched() && editorForm.content().invalid()
+            "
             [language]="editorData().language === 'telugu' ? 'telugu' : 'english'"
             (languageChange)="setFormLanguage($event)"
           ></app-markdown-editor>
@@ -112,6 +115,7 @@
               type="text"
               [attr.lang]="editorData().language === 'telugu' ? 'te' : 'en'"
               [formField]="editorForm.author"
+              [attr.aria-invalid]="editorForm.author().touched() && editorForm.author().invalid()"
               (input)="updateMetadata('author', $event)"
               (keydown)="onMetadataKeydown($event)"
               (focus)="onMetadataFocus('author', $event)"
@@ -169,6 +173,7 @@
               type="text"
               [attr.lang]="editorData().language === 'telugu' ? 'te' : 'en'"
               [formField]="editorForm.tags"
+              [attr.aria-invalid]="editorForm.tags().touched() && editorForm.tags().invalid()"
               (input)="updateMetadata('tags', $event)"
               (keydown)="onMetadataKeydown($event)"
               (focus)="onMetadataFocus('tags', $event)"

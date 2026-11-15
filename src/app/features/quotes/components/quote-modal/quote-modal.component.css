@@ -73,7 +73,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  color: var(--text-on-active);
+  color: var(--md-sys-color-on-primary);
   background-color: var(--bg-suggestion-active);
   box-shadow: none;
   font-size: 21px;
@@ -142,7 +142,7 @@
   gap: 9px;
 }
 .hidden-comments-toggle {
-  min-height: 36px;
+  min-height: 40px;
   padding: 0 16px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
@@ -192,7 +192,7 @@
   background: var(--bg-surface-elevated);
 }
 .comment-language-selector button {
-  min-height: 36px;
+  min-height: 40px;
   padding: 5px 10px;
   border: 0;
   border-radius: 999px;
@@ -243,7 +243,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 34px;
+  min-height: 40px;
   padding: 7px 9px;
   border: 0;
   border-radius: var(--radius-sm);
@@ -265,10 +265,12 @@
   background: var(--bg-tab-pill);
   font-size: 10px;
 }
-.comment-form button,
 .comment-actions button,
 .comment-item > button,
 .comment-signin button {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
   border: 0;
   color: var(--maroon-700);
   background: transparent;
@@ -276,6 +278,15 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+}
+.comment-actions button:hover,
+.comment-item > button:hover,
+.comment-signin button:hover {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) var(--md-sys-state-hover),
+    transparent
+  );
 }
 .comment-form > button {
   justify-self: end;
@@ -288,9 +299,9 @@
   font: var(--md-sys-typescale-label-large);
 }
 .comment-form > button:disabled {
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
-  opacity: 0.38;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  opacity: 1;
   cursor: not-allowed;
 }
 .comment-list {
@@ -337,7 +348,7 @@
 }
 .comment-edit-actions button {
   min-height: 40px;
-  padding: 6px 10px;
+  padding: 0 12px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   color: var(--maroon-700);
@@ -353,7 +364,10 @@
   background: var(--primary-500);
 }
 .comment-edit-actions button:disabled {
-  opacity: 0.55;
+  border-color: transparent;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  opacity: 1;
   cursor: not-allowed;
 }
 .comment-signin {
@@ -430,7 +444,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 36px;
+  min-height: 40px;
   padding: 7px 9px;
   border: 0;
   border-radius: var(--radius-sm);
@@ -467,6 +481,12 @@
   border-color: var(--primary-500);
   background: var(--bg-input-focus);
   box-shadow: var(--md-sys-focus-ring);
+}
+.form-control[aria-invalid='true'] {
+  border-color: var(--md-sys-color-error);
+}
+.form-control[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-sys-color-error) 24%, transparent);
 }
 textarea.form-control {
   min-height: 132px;

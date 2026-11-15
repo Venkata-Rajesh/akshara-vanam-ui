@@ -19,6 +19,9 @@ describe('authorInitial', () => {
 
   it('assigns a stable color to the same normalized name', () => {
     expect(authorAvatarColor(' వెంకట ')).toBe(authorAvatarColor('వెంకట'));
+    expect(authorAvatarColor('వెంకట')).toMatch(
+      /^hsl\(\d+ 48% var\(--app-avatar-tonal-lightness\)\)$/,
+    );
   });
 
   it('distributes different names across the avatar palette', () => {

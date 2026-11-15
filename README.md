@@ -24,8 +24,9 @@ The UI uses custom Angular controls styled with the Material 3 baseline palette;
 not installed. Semantic light/dark color roles, surface containers, typography, shape, elevation,
 spacing, state, focus, and motion tokens live in `src/styles.css`. Existing component color aliases
 map to those roles so the dashboard, dialogs, auth flows, editor, notifications, and not-found route
-stay in sync. Plus Jakarta Sans is the English UI face, with Noto Sans Telugu and Noto Serif Telugu
-retained for Telugu text and poetry. The theme toggle continues to persist `theme-preference`.
+stay in sync. Author avatars use theme-responsive tonal colors and foregrounds for readable contrast
+in both schemes. Plus Jakarta Sans is the English UI face, with Noto Sans Telugu and Noto Serif
+Telugu retained for Telugu text and poetry. The theme toggle continues to persist `theme-preference`.
 
 ## Code scaffolding
 

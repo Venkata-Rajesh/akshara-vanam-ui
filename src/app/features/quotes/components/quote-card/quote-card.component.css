@@ -171,21 +171,18 @@
   align-items: center;
   justify-content: center;
   transition:
-    transform 0.2s var(--ease-smooth),
     background 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease,
     box-shadow 0.2s ease;
-  will-change: transform;
 }
 
 .action-icon-btn:hover,
 .copy-btn:hover {
-  background: var(--tag-bg);
-  color: var(--primary-500);
+  background: var(--bg-suggestion-active);
+  color: var(--text-on-active);
   border-color: var(--primary-400);
-  transform: translateY(-1px) scale(1.06);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .action-icon-btn.danger:hover {
@@ -250,7 +247,7 @@
 .like-heart-icon,
 .broken-heart-icon {
   flex: 0 0 auto;
-  color: var(--md-sys-color-tertiary);
+  color: #c62828;
 }
 .like-heart-icon {
   font-size: 16px;

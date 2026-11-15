@@ -19,6 +19,14 @@
   box-shadow: var(--md-sys-focus-ring);
 }
 
+:host([aria-invalid='true']) .md-editor-container {
+  border-color: var(--md-sys-color-error);
+}
+
+:host([aria-invalid='true']) .md-editor-container.focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-sys-color-error) 24%, transparent);
+}
+
 .md-toolbar {
   display: flex;
   align-items: center;

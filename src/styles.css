@@ -43,6 +43,7 @@
   --md-sys-color-shadow: #000000;
   --md-sys-color-success: #386a20;
   --md-sys-color-on-success: #ffffff;
+  --app-avatar-tonal-lightness: 32%;
 
   --font-body: 'Plus Jakarta Sans', 'Noto Sans Telugu', sans-serif;
   --md-sys-typescale-font-brand: var(--font-body);
@@ -205,6 +206,7 @@
   --md-sys-color-shadow: #000000;
   --md-sys-color-success: #a8d58d;
   --md-sys-color-on-success: #17380a;
+  --app-avatar-tonal-lightness: 72%;
   --md-sys-focus-ring: 0 0 0 3px rgb(208 188 255 / 28%);
   --bg-modal-backdrop: rgb(15 13 19 / 72%);
   --focus-ring: rgb(208 188 255 / 18%);
