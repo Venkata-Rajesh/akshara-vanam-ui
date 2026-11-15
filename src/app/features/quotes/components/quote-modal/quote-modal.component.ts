@@ -1,5 +1,5 @@
+import { DatePipe } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   ElementRef,
   Component,
   effect,
@@ -9,8 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { form, FormField, maxLength, minLength, required, validate } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import {
   PoetryLanguage,
@@ -32,10 +31,9 @@ import { MarkdownEditorComponent } from '../../../../shared/components/markdown-
 
 @Component({
   selector: 'app-quote-modal',
-  imports: [CommonModule, FormsModule, MarkdownEditorComponent],
+  imports: [DatePipe, FormField, MarkdownEditorComponent],
   templateUrl: './quote-modal.component.html',
   styleUrl: './quote-modal.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuoteModalComponent {
   readonly avatarColor = authorAvatarColor;
@@ -59,6 +57,7 @@ export class QuoteModalComponent {
   readonly selectedMetadataSuggestionIndex = signal(0);
   readonly metadataField = signal<'title' | 'author' | 'tags' | null>(null);
   readonly metadataInputFocused = signal(false);
+  readonly dialogRoot = viewChild<ElementRef<HTMLElement>>('dialogRoot');
   readonly commentTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('commentTextarea');
   readonly isLoadingComments = signal(false);
   readonly isPostingComment = signal(false);
@@ -66,9 +65,10 @@ export class QuoteModalComponent {
   readonly showHiddenComments = signal(false);
   readonly editingCommentId = signal<string | null>(null);
   readonly commentEditDraft = signal('');
-  commentInputFocused = false;
+  readonly commentInputFocused = signal(false);
   private readonly transliterator = new TeluguEditorEngine();
   private commentComposition: { roman: string; start: number; end: number } | null = null;
+  private previousFocus: HTMLElement | null = null;
   private metadataComposition: {
     field: 'title' | 'author' | 'tags';
     roman: string;
@@ -77,15 +77,34 @@ export class QuoteModalComponent {
   } | null = null;
   private metadataInput: HTMLInputElement | null = null;
 
-  readonly form = signal<QuoteInput>({
+  readonly editorData = signal({
     title: '',
     content: '',
     author: '',
-    tags: [],
-    language: 'english',
-    transliterationMode: 'native',
+    tags: '',
+    language: 'english' as PoetryLanguage,
+    transliterationMode: 'native' as TransliterationMode,
   });
-  readonly tagsValue = signal('');
+  readonly editorForm = form(this.editorData, (path) => {
+    required(path.content);
+    required(path.author);
+    minLength(path.author, 2);
+    maxLength(path.title, 120);
+    maxLength(path.author, 100);
+    validate(path.tags, ({ value }) =>
+      value().split(',').some((tag) => tag.trim())
+        ? undefined
+        : { kind: 'tagsRequired', message: 'Add at least one tag.' },
+    );
+  });
+  readonly commentForm = form(this.commentDraft, (path) => {
+    required(path);
+    maxLength(path, 1500);
+  });
+  readonly commentEditForm = form(this.commentEditDraft, (path) => {
+    required(path);
+    maxLength(path, 1500);
+  });
   readonly languageOptions: PoetryLanguage[] = ['english', 'telugu'];
   readonly transliterationOptions: TransliterationMode[] = ['native', 'roman'];
 
@@ -93,31 +112,47 @@ export class QuoteModalComponent {
     effect(() => {
       const quote = this.quote();
       if (quote) {
-        this.form.set({
+        this.editorData.set({
           title: quote.title || '',
           content: quote.content,
           author: quote.author,
-          tags: quote.tags,
+          tags: quote.tags.join(', '),
           language: quote.language || 'english',
           transliterationMode: quote.transliterationMode || 'native',
         });
-        this.tagsValue.set(quote.tags.join(', '));
         if (!this.editorMode()) {
           this.commentLanguage.set(quote.language || 'english');
           this.loadComments(quote._id);
         }
       } else if (this.editorMode()) {
         this.comments.set([]);
-        this.form.set({
+        this.editorData.set({
           title: '',
           content: '',
           author: '',
-          tags: [],
+          tags: '',
           language: 'english',
           transliterationMode: 'native',
         });
-        this.tagsValue.set('');
       }
+    });
+
+    effect(() => {
+      const isOpen = this.editorMode() || this.quote() !== null;
+      if (isOpen) {
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLElement && activeElement !== document.body) {
+          this.previousFocus ??= activeElement;
+        }
+        queueMicrotask(() =>
+          this.dialogRoot()?.nativeElement.querySelector<HTMLElement>('.close-btn')?.focus(),
+        );
+        return;
+      }
+
+      const previousFocus = this.previousFocus;
+      this.previousFocus = null;
+      if (previousFocus?.isConnected) queueMicrotask(() => previousFocus.focus());
     });
   }
 
@@ -128,6 +163,34 @@ export class QuoteModalComponent {
   onBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
       this.onClose();
+    }
+  }
+
+  onDialogKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.onClose();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const dialog = this.dialogRoot()?.nativeElement;
+    if (!dialog) return;
+
+    const focusableElements = dialog.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+    );
+    const first = focusableElements.item(0);
+    const last = focusableElements.item(focusableElements.length - 1);
+    if (!first || !last) return;
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   }
 
@@ -142,20 +205,28 @@ export class QuoteModalComponent {
     return authorInitial(author);
   }
 
-  onSave(): void {
-    const form = this.form();
-    const tags = this.tagsValue()
+  onSave(event: Event): void {
+    event.preventDefault();
+    if (!this.editorForm().valid()) {
+      this.editorForm.content().markAsTouched();
+      this.editorForm.author().markAsTouched();
+      this.editorForm.tags().markAsTouched();
+      return;
+    }
+
+    const formData = this.editorData();
+    const tags = formData.tags
       .split(',')
       .map((tag) => tag.trim())
       .filter(Boolean);
-    if (!form.content.trim() || !form.author.trim() || tags.length === 0) return;
+    if (tags.length === 0) return;
     this.saveQuote.emit({
-      title: form.title?.trim() || undefined,
-      content: form.content.trim(),
-      author: form.author.trim(),
+      title: formData.title.trim() || undefined,
+      content: formData.content.trim(),
+      author: formData.author.trim(),
       tags,
-      language: form.language || 'english',
-      transliterationMode: form.transliterationMode || 'native',
+      language: formData.language,
+      transliterationMode: formData.transliterationMode,
     });
   }
 
@@ -164,7 +235,7 @@ export class QuoteModalComponent {
     this.metadataInput = input;
     this.metadataField.set(field);
     const value = input.value;
-    if (this.form().language !== 'telugu') {
+    if (this.editorData().language !== 'telugu') {
       this.setMetadataValue(field, value);
       this.clearMetadataSuggestions();
       return;
@@ -243,7 +314,7 @@ export class QuoteModalComponent {
   }
 
   setFormLanguage(language: PoetryLanguage): void {
-    this.form.update((value) => ({
+    this.editorData.update((value) => ({
       ...value,
       language,
       transliterationMode: language === 'telugu' ? 'roman' : 'native',
@@ -251,6 +322,11 @@ export class QuoteModalComponent {
     if (language === 'english') {
       this.clearMetadataSuggestions();
     }
+  }
+
+  setFormLanguageFromEvent(event: Event): void {
+    const language = (event.target as HTMLSelectElement).value;
+    this.setFormLanguage(language === 'telugu' ? 'telugu' : 'english');
   }
 
   private updateMetadataSuggestions(
@@ -284,15 +360,11 @@ export class QuoteModalComponent {
   }
 
   private metadataValue(field: 'title' | 'author' | 'tags'): string {
-    return field === 'tags' ? this.tagsValue() : this.form()[field] || '';
+    return this.editorData()[field];
   }
 
   private setMetadataValue(field: 'title' | 'author' | 'tags', value: string): void {
-    if (field === 'tags') {
-      this.tagsValue.set(value);
-      return;
-    }
-    this.form.update((form) => ({ ...form, [field]: value }));
+    this.editorData.update((data) => ({ ...data, [field]: value }));
   }
 
   commentAuthor(comment: QuoteComment): string {
@@ -328,6 +400,10 @@ export class QuoteModalComponent {
     this.commentDraft.set(converted);
     this.updateCommentSuggestions(converted, convertedCursor);
     if (converted !== value) this.restoreCommentCursor(convertedCursor);
+  }
+
+  onCommentInput(event: Event): void {
+    this.onCommentDraftChange((event.target as HTMLTextAreaElement).value);
   }
 
   onCommentKeydown(event: KeyboardEvent): void {
@@ -369,7 +445,12 @@ export class QuoteModalComponent {
     this.restoreCommentCursor(active.start + suggestion.text.length + suffix.length);
   }
 
-  submitComment(): void {
+  submitComment(event: Event): void {
+    event.preventDefault();
+    if (!this.commentForm().valid()) {
+      this.commentForm().markAsTouched();
+      return;
+    }
     const quote = this.quote();
     const draft = this.commentDraft().trim();
     const body =
@@ -407,7 +488,12 @@ export class QuoteModalComponent {
     this.commentEditDraft.set('');
   }
 
-  saveComment(comment: QuoteComment): void {
+  saveComment(comment: QuoteComment, event: Event): void {
+    event.preventDefault();
+    if (!this.commentEditForm().valid()) {
+      this.commentEditForm().markAsTouched();
+      return;
+    }
     const quote = this.quote();
     const body = this.commentEditDraft().trim();
     if (!quote || !body || this.isSavingComment()) return;

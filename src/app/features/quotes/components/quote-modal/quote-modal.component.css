@@ -412,6 +412,9 @@
   gap: 8px;
   text-align: left;
 }
+.editor-field-error {
+  color: var(--danger);
+}
 .form-row {
   display: grid;
   grid-template-columns: 1.4fr 1fr;

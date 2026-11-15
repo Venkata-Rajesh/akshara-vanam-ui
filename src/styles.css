@@ -6,6 +6,8 @@
 :root,
 :root.light,
 [data-theme='light'] {
+  color-scheme: light;
+
   /* Surfaces */
   --bg-main: #f5f4ee;
   --bg-surface: rgba(255, 254, 249, 0.9);
@@ -106,6 +108,8 @@
    ========================================================================== */
 :root.dark,
 [data-theme='dark'] {
+  color-scheme: dark;
+
   /* Surfaces */
   --bg-main: #18110e;
   --bg-surface: rgba(39, 28, 22, 0.84);
@@ -191,9 +195,35 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
   transition:
     background-color 0.65s var(--ease-motion),
     color 0.65s var(--ease-motion);
+}
+
+::view-transition-old(root) {
+  animation: route-leave 140ms ease-in both;
+}
+
+::view-transition-new(root) {
+  animation: route-enter 260ms var(--ease-motion) both;
+}
+
+@keyframes route-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 button,
@@ -207,6 +237,20 @@ select {
     color var(--duration-standard) var(--ease-motion),
     transform var(--duration-standard) var(--ease-motion),
     opacity var(--duration-standard) var(--ease-motion);
+}
+
+@media (max-width: 1030px) {
+  .dashboard-wrapper .editor-tools-group {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-wrapper .editor-tools-group > * {
+    max-width: 100%;
+  }
+
+  .dashboard-wrapper .search-box {
+    min-width: 0;
+  }
 }
 
 .theme-toggle-btn {
@@ -258,7 +302,9 @@ select {
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
-  *::after {
+  *::after,
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

@@ -1,43 +1,43 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { form, FormField, minLength, required } from '@angular/forms/signals';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { PasswordVisibilityToggleComponent } from '../../shared/components/password-visibility-toggle.component';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [FormsModule, RouterLink, PasswordVisibilityToggleComponent],
+  imports: [FormField, RouterLink, PasswordVisibilityToggleComponent],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPasswordComponent {
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  readonly password = signal('');
-  readonly confirmation = signal('');
+  readonly model = signal({ password: '', confirmation: '' });
+  readonly passwordForm = form(this.model, (path) => {
+    required(path.password);
+    minLength(path.password, 12);
+    required(path.confirmation);
+    minLength(path.confirmation, 12);
+  });
   readonly passwordVisible = signal(false);
   readonly confirmationVisible = signal(false);
   readonly isLoading = signal(false);
   readonly error = signal('');
 
-  updatePassword(value: string): void {
-    this.password.set(value);
+  clearError(): void {
     this.error.set('');
   }
 
-  updateConfirmation(value: string): void {
-    this.confirmation.set(value);
-    this.error.set('');
-  }
-
-  submit(): void {
-    if (this.password().length < 12) {
-      this.error.set('Password must be at least 12 characters.');
+  submit(event: Event): void {
+    event.preventDefault();
+    if (!this.passwordForm().valid()) {
+      this.passwordForm.password().markAsTouched();
+      this.passwordForm.confirmation().markAsTouched();
       return;
     }
-    if (this.password() !== this.confirmation()) {
+    if (this.model().password !== this.model().confirmation) {
       this.error.set('Passwords do not match.');
       return;
     }
@@ -49,7 +49,7 @@ export class ResetPasswordComponent {
       this.isLoading.set(false);
       return;
     }
-    this.auth.resetPassword(token, this.password()).subscribe({
+    this.auth.resetPassword(token, this.model().password).subscribe({
       next: () => void this.router.navigate(['/login'], { queryParams: { reset: 'success' } }),
       error: (error: Error) => {
         this.isLoading.set(false);

@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { guestGuard } from './core/auth/auth.guard';
-import { QuotesDashboardComponent } from './features/quotes/quotes-dashboard.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
 
 export const routes: Routes = [
@@ -33,7 +32,10 @@ export const routes: Routes = [
   },
   {
     path: 'quotes',
-    component: QuotesDashboardComponent,
+    loadComponent: () =>
+      import('./features/quotes/quotes-dashboard.component').then(
+        (module) => module.QuotesDashboardComponent,
+      ),
     title: 'InspireHub - Quotes & Inspiration',
   },
   {

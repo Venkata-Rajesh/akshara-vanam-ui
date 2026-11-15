@@ -2,8 +2,7 @@
   class="quote-card"
   (click)="onCardClick()"
   tabindex="0"
-  (keydown.enter)="onCardClick()"
-  (keydown.space)="onCardClick()"
+  (keydown)="onCardKeydown($event)"
 >
   <div class="card-glow"></div>
 

@@ -1,14 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, output, signal } from '@angular/core';
 import { Quote, QuoteReaction } from '../../../../core/models/quote.model';
 import { authorAvatarColor, authorInitial } from '../../../../core/utils/author-initial';
 
 @Component({
   selector: 'app-quote-card',
-  imports: [CommonModule],
   templateUrl: './quote-card.component.html',
   styleUrl: './quote-card.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuoteCardComponent {
   readonly authorInitial = authorInitial;
@@ -29,6 +26,12 @@ export class QuoteCardComponent {
 
   onCardClick(): void {
     this.selectQuote.emit(this.quote());
+  }
+
+  onCardKeydown(event: KeyboardEvent): void {
+    if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    this.onCardClick();
   }
 
   onCopyClick(event: MouseEvent): void {

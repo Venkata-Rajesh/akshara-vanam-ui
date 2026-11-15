@@ -47,7 +47,7 @@
   </button>
 </div>
 
-<div class="auth-wrapper">
+<main class="auth-wrapper">
   <div class="container" [class.right-panel-active]="isRightPanelActive()">
     <!-- Mobile Toggle Bar -->
     <div class="mobile-toggle">
@@ -60,8 +60,12 @@
     </div>
 
     <!-- Sign Up Form Container -->
-    <div class="form-container sign-up-container">
-      <form #signupForm="ngForm" (ngSubmit)="onSignup(signupForm)">
+    <div
+      class="form-container sign-up-container"
+      [attr.aria-hidden]="!isRightPanelActive()"
+      [inert]="!isRightPanelActive()"
+    >
+      <form (submit)="onSignup($event)">
         <div class="auth-header">
           <h1>Create Account</h1>
           <p class="small-text">Join to explore and curate timeless wisdom</p>
@@ -83,14 +87,11 @@
             </svg>
             <input
               type="text"
-              [(ngModel)]="signupData.username"
-              name="signupUsername"
+              [formField]="signupForm.username"
               placeholder="Full Name / Username"
-              required
-              #signupUsernameInput="ngModel"
             />
           </div>
-          @if (signupUsernameInput.touched && signupUsernameInput.invalid) {
+          @if (signupForm.username().touched() && signupForm.username().invalid()) {
             <span class="field-error">
               <svg
                 width="12"
@@ -127,15 +128,11 @@
             </svg>
             <input
               type="email"
-              [(ngModel)]="signupData.email"
-              name="signupEmail"
+              [formField]="signupForm.email"
               placeholder="Email Address"
-              required
-              email
-              #signupEmailInput="ngModel"
             />
           </div>
-          @if (signupEmailInput.touched && signupEmailInput.invalid) {
+          @if (signupForm.email().touched() && signupForm.email().invalid()) {
             <span class="field-error">
               <svg
                 width="12"
@@ -171,13 +168,9 @@
             <input
               class="password-input"
               [type]="signupPasswordVisible() ? 'text' : 'password'"
-              [(ngModel)]="signupData.password"
-              name="signupPassword"
+              [formField]="signupForm.password"
               placeholder="Password (12+ chars)"
-              required
-              minlength="12"
               autocomplete="new-password"
-              #signupPasswordInput="ngModel"
             />
             <app-password-visibility-toggle
               [visible]="signupPasswordVisible()"
@@ -185,7 +178,7 @@
               (visibleChange)="signupPasswordVisible.set($event)"
             />
           </div>
-          @if (signupPasswordInput.touched && signupPasswordInput.invalid) {
+          @if (signupForm.password().touched() && signupForm.password().invalid()) {
             <span class="field-error">
               <svg
                 width="12"
@@ -199,7 +192,7 @@
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
-              @if (signupPasswordInput.errors?.['minlength']) {
+              @if (signupData().password.length > 0 && signupData().password.length < 12) {
                 Password must be at least 12 characters.
               } @else {
                 Password is required.
@@ -225,13 +218,9 @@
             <input
               class="password-input"
               [type]="signupConfirmationVisible() ? 'text' : 'password'"
-              [ngModel]="signupPasswordConfirmation()"
-              (ngModelChange)="signupPasswordConfirmation.set($event)"
-              name="signupPasswordConfirmation"
+              [formField]="signupForm.confirmation"
               placeholder="Confirm password"
-              required
               autocomplete="new-password"
-              #signupConfirmationInput="ngModel"
             />
             <app-password-visibility-toggle
               [visible]="signupConfirmationVisible()"
@@ -239,10 +228,11 @@
               (visibleChange)="signupConfirmationVisible.set($event)"
             />
           </div>
-          @if (signupConfirmationInput.touched && signupConfirmationInput.invalid) {
+          @if (signupForm.confirmation().touched() && signupForm.confirmation().invalid()) {
             <span class="field-error">Please confirm your password.</span>
           } @else if (
-            signupConfirmationInput.touched && signupPasswordConfirmation() !== signupData.password
+            signupForm.confirmation().touched() &&
+            signupData().confirmation !== signupData().password
           ) {
             <span class="field-error" role="alert">Passwords do not match.</span>
           }
@@ -252,8 +242,8 @@
           type="submit"
           class="submit-btn"
           [disabled]="
-            signupForm.invalid ||
-            signupPasswordConfirmation() !== signupData.password ||
+            signupForm().invalid() ||
+            signupData().confirmation !== signupData().password ||
             isLoading()
           "
         >
@@ -277,8 +267,12 @@
     </div>
 
     <!-- Sign In Form Container -->
-    <div class="form-container log-in-container">
-      <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+    <div
+      class="form-container log-in-container"
+      [attr.aria-hidden]="isRightPanelActive()"
+      [inert]="isRightPanelActive()"
+    >
+      <form (submit)="onLogin($event)">
         <div class="auth-header">
           <h1>Sign In</h1>
           <p class="small-text">Welcome back! Please enter your details</p>
@@ -302,15 +296,11 @@
             </svg>
             <input
               type="email"
-              [(ngModel)]="loginData.email"
-              name="loginEmail"
+              [formField]="loginForm.email"
               placeholder="Email Address"
-              required
-              email
-              #loginEmailInput="ngModel"
             />
           </div>
-          @if (loginEmailInput.touched && loginEmailInput.invalid) {
+          @if (loginForm.email().touched() && loginForm.email().invalid()) {
             <span class="field-error">
               <svg
                 width="12"
@@ -346,12 +336,9 @@
             <input
               class="password-input"
               [type]="loginPasswordVisible() ? 'text' : 'password'"
-              [(ngModel)]="loginData.password"
-              name="loginPassword"
+              [formField]="loginForm.password"
               placeholder="Password"
-              required
               autocomplete="current-password"
-              #loginPasswordInput="ngModel"
             />
             <app-password-visibility-toggle
               [visible]="loginPasswordVisible()"
@@ -359,7 +346,7 @@
               (visibleChange)="loginPasswordVisible.set($event)"
             />
           </div>
-          @if (loginPasswordInput.touched && loginPasswordInput.invalid) {
+          @if (loginForm.password().touched() && loginForm.password().invalid()) {
             <span class="field-error">
               <svg
                 width="12"
@@ -380,7 +367,7 @@
 
         <a class="forgot-password-link" routerLink="/forgot-password">Forgot password?</a>
 
-        <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isLoading()">
+        <button type="submit" class="submit-btn" [disabled]="loginForm().invalid() || isLoading()">
           @if (isLoading()) {
             <span class="spinner"></span> Signing In...
           } @else {
@@ -422,4 +409,4 @@
       </div>
     </div>
   </div>
-</div>
+</main>

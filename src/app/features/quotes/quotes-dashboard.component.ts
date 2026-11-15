@@ -1,15 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiService, QuoteInput } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -22,10 +13,9 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-quotes-dashboard',
-  imports: [CommonModule, FormsModule, QuoteCardComponent, QuoteModalComponent],
+  imports: [DecimalPipe, QuoteCardComponent, QuoteModalComponent],
   templateUrl: './quotes-dashboard.component.html',
   styleUrl: './quotes-dashboard.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuotesDashboardComponent implements OnDestroy, OnInit {
   private readonly authService = inject(AuthService);
@@ -106,6 +96,10 @@ export class QuotesDashboardComponent implements OnDestroy, OnInit {
   readonly isEditorOpen = signal(false);
   readonly isSaving = signal(false);
   readonly isRestoringAll = signal(false);
+
+  updateSearchQuery(event: Event): void {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
 
   // Data signals
   readonly quotes = signal<Quote[]>([]);

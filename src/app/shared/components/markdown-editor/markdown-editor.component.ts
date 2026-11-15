@@ -1,13 +1,12 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
+  input,
   model,
   signal,
   viewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormValueControl } from '@angular/forms/signals';
 import {
   TeluguEditorEngine,
   TransliterationCandidate,
@@ -16,9 +15,8 @@ import {
 
 @Component({
   selector: 'app-markdown-editor',
-  imports: [CommonModule, FormsModule],
   template: `
-    <div class="md-editor-container" [class.focus]="isFocused">
+    <div class="md-editor-container" [class.focus]="isFocused()">
       <!-- Toolbar -->
       <div class="md-toolbar">
         <div class="toolbar-group">
@@ -62,15 +60,19 @@ import {
             >
               అ→అ
             </button>
-            <div
+            <button
+              type="button"
               class="lang-toggle-pill"
               (click)="toggleLanguage()"
               [class.telugu]="language() === 'telugu'"
+              role="switch"
+              aria-label="Telugu transliteration"
+              [attr.aria-checked]="language() === 'telugu'"
             >
               <div class="lang-slider"></div>
               <span class="lang-label" [class.active]="language() === 'english'">English</span>
               <span class="lang-label" [class.active]="language() === 'telugu'">తెలుగు</span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -79,11 +81,12 @@ import {
       <textarea
         #editorTextarea
         class="md-textarea"
-        [ngModel]="content()"
-        (ngModelChange)="onContentChange($event)"
+        [id]="textareaId()"
+        [value]="value()"
+        (input)="onInput($event)"
         (keydown)="onKeydown($event)"
-        (focus)="isFocused = true"
-        (blur)="isFocused = false"
+        (focus)="isFocused.set(true)"
+        (blur)="isFocused.set(false)"
         [placeholder]="
           language() === 'telugu'
             ? 'Type in English to see తెలుగు... (Markdown supported)'
@@ -91,7 +94,7 @@ import {
         "
       ></textarea>
 
-      @if (isFocused && suggestions().length) {
+      @if (isFocused() && suggestions().length) {
         <div class="suggestions" role="listbox" aria-label="Telugu transliteration suggestions">
           @for (suggestion of suggestions(); track suggestion.text; let index = $index) {
             <button
@@ -112,16 +115,16 @@ import {
     </div>
   `,
   styleUrl: './markdown-editor.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MarkdownEditorComponent {
-  readonly content = model<string>('');
+export class MarkdownEditorComponent implements FormValueControl<string> {
+  readonly textareaId = input('markdown-editor');
+  readonly value = model<string>('');
   readonly language = model<'english' | 'telugu'>('telugu');
 
   readonly editorTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('editorTextarea');
   readonly suggestions = signal<TransliterationCandidate[]>([]);
   readonly selectedSuggestionIndex = signal(0);
-  isFocused = false;
+  readonly isFocused = signal(false);
   private readonly engine = new TeluguEditorEngine();
   private readonly userWords = new Map<string, string>();
   private composition: { roman: string; start: number; end: number } | null = null;
@@ -136,9 +139,13 @@ export class MarkdownEditorComponent {
     this.clearSuggestions();
   }
 
+  onInput(event: Event): void {
+    this.onContentChange((event.target as HTMLTextAreaElement).value);
+  }
+
   onContentChange(value: string): void {
     if (this.language() === 'english') {
-      this.content.set(value);
+      this.value.set(value);
       this.clearSuggestions();
       return;
     }
@@ -149,7 +156,7 @@ export class MarkdownEditorComponent {
     // the same engine that provides suggestions.
     const converted = this.engine.transliterateText(value, true);
     const convertedCursor = this.engine.transliterateText(value.slice(0, cursor), true).length;
-    this.content.set(converted);
+    this.value.set(converted);
     this.updateSuggestions(converted, convertedCursor);
     if (converted !== value) this.restoreCursor(convertedCursor);
   }
@@ -177,14 +184,14 @@ export class MarkdownEditorComponent {
     const textarea = this.editorTextarea()?.nativeElement;
     if (!suggestion || !textarea) return;
     const cursor = textarea.selectionStart;
-    const active = this.composition ?? activeRomanWord(this.content(), cursor);
+    const active = this.composition ?? activeRomanWord(this.value(), cursor);
     if (!active) return;
-    if (this.content().slice(active.start, active.end) !== active.roman) {
+    if (this.value().slice(active.start, active.end) !== active.roman) {
       this.clearSuggestions();
       return;
     }
-    const updated = `${this.content().slice(0, active.start)}${suggestion.text}${suffix}${this.content().slice(active.end)}`;
-    this.content.set(updated);
+    const updated = `${this.value().slice(0, active.start)}${suggestion.text}${suffix}${this.value().slice(active.end)}`;
+    this.value.set(updated);
     this.engine.remember(active.roman, suggestion.text);
     this.persistUserWord(active.roman, suggestion.text);
     this.clearSuggestions();
@@ -194,10 +201,10 @@ export class MarkdownEditorComponent {
   convertAll(): void {
     if (this.language() !== 'telugu') return;
     const textarea = this.editorTextarea()?.nativeElement;
-    const cursor = textarea?.selectionStart ?? this.content().length;
-    const current = this.content();
+    const cursor = textarea?.selectionStart ?? this.value().length;
+    const current = this.value();
     const converted = this.engine.transliterateText(current);
-    this.content.set(converted);
+    this.value.set(converted);
     this.clearSuggestions();
     this.restoreCursor(this.engine.transliterateText(current.slice(0, cursor)).length);
   }
@@ -208,7 +215,7 @@ export class MarkdownEditorComponent {
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const current = this.content();
+    const current = this.value();
 
     const selectedText = current.substring(start, end);
     const before = current.substring(0, start);
@@ -217,9 +224,9 @@ export class MarkdownEditorComponent {
     const newContent = `${before}${prefix}${selectedText}${suffix}${after}`;
 
     if (this.language() === 'telugu') {
-      this.content.set(this.engine.transliterateText(newContent));
+      this.value.set(this.engine.transliterateText(newContent));
     } else {
-      this.content.set(newContent);
+      this.value.set(newContent);
     }
 
     // Restore focus and cursor position after DOM updates

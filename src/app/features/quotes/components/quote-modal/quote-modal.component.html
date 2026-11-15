@@ -1,24 +1,27 @@
 @if (editorMode()) {
   <div
     class="modal-backdrop"
+    #dialogRoot
     animate.enter="modal-backdrop-enter"
     animate.leave="modal-backdrop-leave"
     (click)="onBackdropClick($event)"
+    (keydown)="onDialogKeydown($event)"
     role="dialog"
     aria-modal="true"
+    aria-labelledby="editor-title"
   >
     <form
       class="modal-card editor-card"
       animate.enter="modal-panel-enter"
       animate.leave="modal-panel-leave"
       (click)="$event.stopPropagation()"
-      (ngSubmit)="onSave()"
+      (submit)="onSave($event)"
     >
       <button type="button" class="close-btn" (click)="onClose()" aria-label="Close dialog">
         &times;
       </button>
 
-      <h2 class="modal-title">{{ quote() ? 'Edit poem' : 'Write a new poem' }}</h2>
+      <h2 id="editor-title" class="modal-title">{{ quote() ? 'Edit poem' : 'Write a new poem' }}</h2>
 
       <div class="editor-form">
         <div class="form-group form-row split-row">
@@ -28,16 +31,14 @@
               <input
                 id="poem-title"
                 class="form-control"
-                name="title"
                 type="text"
-                [attr.lang]="form().language === 'telugu' ? 'te' : 'en'"
-                [ngModel]="form().title"
+                [attr.lang]="editorData().language === 'telugu' ? 'te' : 'en'"
+                [formField]="editorForm.title"
                 (input)="updateMetadata('title', $event)"
                 (keydown)="onMetadataKeydown($event)"
                 (focus)="onMetadataFocus('title', $event)"
                 (blur)="onMetadataBlur()"
-                maxlength="120"
-                [placeholder]="form().language === 'telugu' ? 'శీర్షిక' : 'Sunrise, Kadal, etc.'"
+                [placeholder]="editorData().language === 'telugu' ? 'శీర్షిక' : 'Sunrise, Kadal, etc.'"
               />
               @if (
                 metadataInputFocused() &&
@@ -77,9 +78,8 @@
             <select
               id="poem-language"
               class="form-control"
-              name="language"
-              [ngModel]="form().language"
-              (ngModelChange)="setFormLanguage($event)"
+              [formField]="editorForm.language"
+              (change)="setFormLanguageFromEvent($event)"
             >
               @for (option of languageOptions; track option) {
                 <option [value]="option">{{ option === 'telugu' ? 'తెలుగు' : 'English' }}</option>
@@ -90,15 +90,17 @@
 
         <div class="form-group">
           <div class="field-header">
-            <label for="quote-content">Poem content</label>
+            <label id="quote-content-label" for="quote-content">Poem content</label>
           </div>
           <app-markdown-editor
-            name="content"
-            [content]="form().content"
-            (contentChange)="form.update((value) => ({ ...value, content: $event }))"
-            [language]="form().language === 'telugu' ? 'telugu' : 'english'"
+            [textareaId]="'quote-content'"
+            [formField]="editorForm.content"
+            [language]="editorData().language === 'telugu' ? 'telugu' : 'english'"
             (languageChange)="setFormLanguage($event)"
           ></app-markdown-editor>
+          @if (editorForm.content().touched() && editorForm.content().invalid()) {
+            <p class="editor-field-error" role="alert">Poem content is required.</p>
+          }
         </div>
 
         <div class="form-group">
@@ -107,18 +109,14 @@
             <input
               id="quote-author"
               class="form-control"
-              name="author"
               type="text"
-              [attr.lang]="form().language === 'telugu' ? 'te' : 'en'"
-              [ngModel]="form().author"
+              [attr.lang]="editorData().language === 'telugu' ? 'te' : 'en'"
+              [formField]="editorForm.author"
               (input)="updateMetadata('author', $event)"
               (keydown)="onMetadataKeydown($event)"
               (focus)="onMetadataFocus('author', $event)"
               (blur)="onMetadataBlur()"
-              required
-              minlength="2"
-              maxlength="100"
-              [placeholder]="form().language === 'telugu' ? 'కవి పేరు' : 'Author name'"
+              [placeholder]="editorData().language === 'telugu' ? 'కవి పేరు' : 'Author name'"
             />
             @if (
               metadataInputFocused() && metadataField() === 'author' && metadataSuggestions().length
@@ -149,6 +147,17 @@
               </div>
             }
           </div>
+          @if (editorForm.author().touched() && editorForm.author().invalid()) {
+            <p class="editor-field-error" role="alert">
+              @if (editorData().author.length === 0) {
+                Author is required.
+              } @else if (editorData().author.length < 2) {
+                Author must be at least 2 characters.
+              } @else {
+                Author must be 100 characters or fewer.
+              }
+            </p>
+          }
         </div>
 
         <div class="form-group">
@@ -157,18 +166,16 @@
             <input
               id="quote-tags"
               class="form-control"
-              name="tags"
               type="text"
-              [attr.lang]="form().language === 'telugu' ? 'te' : 'en'"
-              [ngModel]="tagsValue()"
+              [attr.lang]="editorData().language === 'telugu' ? 'te' : 'en'"
+              [formField]="editorForm.tags"
               (input)="updateMetadata('tags', $event)"
               (keydown)="onMetadataKeydown($event)"
               (focus)="onMetadataFocus('tags', $event)"
               (blur)="onMetadataBlur()"
               [placeholder]="
-                form().language === 'telugu' ? 'జ్ఞానం, జీవితం, ఎదుగుదల' : 'Wisdom, Life, Growth'
+                editorData().language === 'telugu' ? 'జ్ఞానం, జీవితం, ఎదుగుదల' : 'Wisdom, Life, Growth'
               "
-              required
             />
             @if (
               metadataInputFocused() && metadataField() === 'tags' && metadataSuggestions().length
@@ -195,6 +202,9 @@
               </div>
             }
           </div>
+          @if (editorForm.tags().touched() && editorForm.tags().invalid()) {
+            <p class="editor-field-error" role="alert">{{ editorForm.tags().errors()[0].message }}</p>
+          }
         </div>
       </div>
 
@@ -209,11 +219,14 @@
 } @else if (quote(); as q) {
   <div
     class="modal-backdrop"
+    #dialogRoot
     animate.enter="modal-backdrop-enter"
     animate.leave="modal-backdrop-leave"
     (click)="onBackdropClick($event)"
+    (keydown)="onDialogKeydown($event)"
     role="dialog"
     aria-modal="true"
+    aria-labelledby="quote-title"
   >
     <div
       class="modal-card quote-detail-card"
@@ -231,7 +244,7 @@
           {{ authorInitial(q.author) }}
         </div>
         <div>
-          <h2 class="modal-author">{{ q.title || q.author }}</h2>
+          <h2 id="quote-title" class="modal-author">{{ q.title || q.author }}</h2>
           @if (q.dateAdded) {
             <span class="modal-date"
               >{{ q.language === 'telugu' ? 'తెలుగు' : 'English' }} · Added on
@@ -269,7 +282,7 @@
         </div>
 
         @if (isAuthenticated()) {
-          <form class="comment-form" (ngSubmit)="submitComment()">
+          <form class="comment-form" (submit)="submitComment($event)">
             <div class="comment-language-selector" role="group" aria-label="Comment language">
               <button
                 type="button"
@@ -291,20 +304,18 @@
             <div class="comment-input">
               <textarea
                 #commentTextarea
-                name="comment"
-                [ngModel]="commentDraft()"
-                (ngModelChange)="onCommentDraftChange($event)"
+                [attr.aria-label]="commentLanguage() === 'telugu' ? 'మీ వ్యాఖ్య' : 'Add a comment'"
+                [formField]="commentForm"
+                (input)="onCommentInput($event)"
                 (keydown)="onCommentKeydown($event)"
-                (focus)="commentInputFocused = true"
-                (blur)="commentInputFocused = false"
+                (focus)="commentInputFocused.set(true)"
+                (blur)="commentInputFocused.set(false)"
                 [attr.lang]="commentLanguage() === 'telugu' ? 'te' : 'en'"
-                maxlength="1500"
                 [placeholder]="
                   commentLanguage() === 'telugu' ? 'మీ వ్యాఖ్యను రాయండి' : 'Add to the conversation'
                 "
-                required
               ></textarea>
-              @if (commentInputFocused && commentSuggestions().length) {
+              @if (commentInputFocused() && commentSuggestions().length) {
                 <div class="comment-suggestions" role="listbox" aria-label="Telugu suggestions">
                   @for (
                     suggestion of commentSuggestions();
@@ -327,7 +338,10 @@
                 </div>
               }
             </div>
-            <button type="submit" [disabled]="isPostingComment() || !commentDraft().trim()">
+            <button
+              type="submit"
+              [disabled]="isPostingComment() || commentForm().invalid() || !commentDraft().trim()"
+            >
               {{
                 isPostingComment()
                   ? 'Posting…'
@@ -360,19 +374,19 @@
                     <time>{{ comment.createdAt | date: 'mediumDate' }}</time>
                   </div>
                   @if (editingCommentId() === comment._id) {
-                    <form class="comment-edit-form" (ngSubmit)="saveComment(comment)">
+                    <form class="comment-edit-form" (submit)="saveComment(comment, $event)">
                       <textarea
-                        [ngModel]="commentEditDraft()"
-                        (ngModelChange)="commentEditDraft.set($event)"
-                        name="editedComment"
-                        maxlength="1500"
+                        [formField]="commentEditForm"
                         aria-label="Edit comment"
-                        required
                       ></textarea>
                       <div class="comment-edit-actions">
                         <button
                           type="submit"
-                          [disabled]="isSavingComment() || !commentEditDraft().trim()"
+                          [disabled]="
+                            isSavingComment() ||
+                            commentEditForm().invalid() ||
+                            !commentEditDraft().trim()
+                          "
                         >
                           {{ isSavingComment() ? 'Saving…' : 'Save changes' }}
                         </button>

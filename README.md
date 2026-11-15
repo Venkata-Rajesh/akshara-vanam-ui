@@ -1,6 +1,6 @@
 # TestAuth
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+This project uses [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
 
 ## Development server
 
@@ -11,6 +11,12 @@ ng serve
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Forms
+
+Form validation and field state use Angular Signal Forms. Authentication, password-reset, quote,
+and comment forms bind directly to signal-backed models; the dashboard search and Markdown editor
+use signal-backed input controls.
 
 ## Code scaffolding
 
@@ -38,10 +44,10 @@ This will compile your project and store the build artifacts in the `dist/` dire
 
 ## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Run the unit tests with the Angular CLI's Vitest-based test runner:
 
 ```bash
-ng test
+npm test
 ```
 
 ## Running end-to-end tests

@@ -162,7 +162,7 @@
   gap: 7px;
   padding: 9px 11px;
   border-radius: 10px;
-  color: var(--maroon-600);
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 700;
 }
@@ -516,7 +516,7 @@
   background: var(--bg-surface-elevated);
 }
 .stat-num {
-  color: var(--maroon-700);
+  color: var(--gold-600);
   font:
     700 28px/1 'Noto Serif Telugu',
     serif;
@@ -540,7 +540,7 @@
 }
 .strip-verse span {
   margin-left: 9px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font:
     600 11px/1.4 'Noto Sans Telugu',
     sans-serif;
@@ -567,7 +567,7 @@
 .collection-heading > p {
   max-width: 360px;
   margin: 0 0 3px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font:
     400 13px/1.7 'Noto Sans Telugu',
     sans-serif;
